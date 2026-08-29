@@ -1,4 +1,4 @@
-export const WA_NUMBER = '919943199955';
+export const WA_NUMBER = '+91 99432 59955';
 
 const rawPlants = [
   { id: 1, name: 'African Blackwood', botanical: 'Dalbergia melanoxylon', category: 'Timber', price: 650, size: '2–3 ft', light: 'Full sun', popular: true, image: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=900&q=85' },
