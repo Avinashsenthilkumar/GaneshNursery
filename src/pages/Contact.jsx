@@ -35,7 +35,7 @@ export default function Contact() {
           <p>Our roots are in Thanjavur, and our plants reach customers across India.</p>
           <div className="contact-lines">
             <p><IconPin size={16} /> Natchathira Nagar, Thanjavur,<br />Tamil Nadu 613007</p>
-            <p><IconPhone size={16} /> +91 99431 19955</p>
+            <p><IconPhone size={16} /> +91 99432 59955</p>
             <p><IconMail size={16} /> care@ganeshnursery.com</p>
           </div>
           <a className="btn primary" href={`https://wa.me/${WA_NUMBER}`} target="_blank" rel="noreferrer"><IconWhatsapp size={16} /> Chat on WhatsApp</a>
