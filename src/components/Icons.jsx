@@ -1,0 +1,28 @@
+import React from 'react';
+
+const base = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' };
+
+export const IconSun = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>;
+export const IconRuler = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M4 15.5 15.5 4l4.5 4.5L8.5 20 4 15.5Z"/><path d="M11 8l2 2M8 11l2 2M14 5l2 2"/></svg>;
+export const IconLeaf = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M5 19c8-.5 13-5.5 14-14C10 6 5 11 5 19Z"/><path d="M5 19c3-4 6-6.5 10.5-10"/></svg>;
+export const IconPin = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.3"/></svg>;
+export const IconPhone = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M6.5 3.5h3L11 8l-2 1.4a12 12 0 0 0 5.6 5.6L16 13l4.5 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/></svg>;
+export const IconMail = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4.5 7 7.5 6 7.5-6"/></svg>;
+export const IconStar = (p) => <svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} fill={p.filled === false ? 'none' : 'currentColor'} stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round" className={p.className}><path d="M12 3.5l2.6 5.4 5.9.7-4.3 4.1 1.1 5.9-5.3-2.9-5.3 2.9 1.1-5.9-4.3-4.1 5.9-.7L12 3.5Z"/></svg>;
+export const IconWhatsapp = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} fill="currentColor" className={p.className}><path d="M12 2.4a9.6 9.6 0 0 0-8.2 14.6L2.4 21.6l4.8-1.3A9.6 9.6 0 1 0 12 2.4Zm0 1.8a7.8 7.8 0 0 1 6.6 12 7.75 7.75 0 0 1-9.9 3l-.4-.2-2.8.7.75-2.7-.2-.4A7.8 7.8 0 0 1 12 4.2Zm-2.9 4.1c-.2 0-.5 0-.7.3-.2.3-.9.9-.9 2.1s.9 2.4 1 2.6c.2.2 1.8 2.8 4.4 3.8 2.2.9 2.6.7 3.1.6.5 0 1.6-.6 1.8-1.3.2-.6.2-1.2.2-1.3-.1-.1-.3-.2-.6-.4-.3-.1-1.6-.8-1.9-.9-.3-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.5-.8-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.2-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.6-.9-2.1-.2-.5-.4-.5-.6-.5Z"/></svg>;
+export const IconBasket = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M4.5 9h15l-1.4 9.4a2 2 0 0 1-2 1.6H7.9a2 2 0 0 1-2-1.6L4.5 9Z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/><path d="M9.5 12.5v4M14.5 12.5v4"/></svg>;
+export const IconClose = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M6 6l12 12M18 6 6 18"/></svg>;
+export const IconChevronLeft = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>;
+export const IconChevronRight = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>;
+export const IconSearch = (p) => <svg viewBox="0 0 24 24" width={p.size||18} height={p.size||18} {...base} className={p.className}><circle cx="10.5" cy="10.5" r="6.5"/><path d="m19.5 19.5-4.3-4.3"/></svg>;
+export const IconMenu = (p) => <svg viewBox="0 0 24 24" width={p.size||22} height={p.size||22} {...base} className={p.className}><path d="M4 7h16M4 12h16M4 17h16"/></svg>;
+export const IconPlus = (p) => <svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} {...base} className={p.className}><path d="M12 5v14M5 12h14"/></svg>;
+export const IconMinus = (p) => <svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} {...base} className={p.className}><path d="M5 12h14"/></svg>;
+export const IconCheck = (p) => <svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} {...base} className={p.className}><path d="m5 12.5 4.5 4.5L19 7"/></svg>;
+export const IconArrowRight = (p) => <svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} {...base} className={p.className}><path d="M4.5 12h15M13.5 5.5 20 12l-6.5 6.5"/></svg>;
+export const IconQuote = (p) => <svg viewBox="0 0 32 24" width={p.size||28} height={p.size||21} fill="currentColor" className={p.className}><path d="M0 24V14.6C0 6 5 .9 13.6 0l1 4C9 5.4 6.6 8.4 6.3 12.6H14V24H0Zm18 0V14.6C18 6 23 .9 31.6 0l1 4C27 5.4 24.6 8.4 24.3 12.6H32V24H18Z"/></svg>;
+export const IconDesign = (p) => <svg viewBox="0 0 24 24" width={p.size||22} height={p.size||22} {...base} className={p.className}><path d="M4 20 14 4l6 6L10 20H4v-6Z"/><path d="M12.5 7.5 16.5 11.5"/></svg>;
+export const IconPlan = (p) => <svg viewBox="0 0 24 24" width={p.size||22} height={p.size||22} {...base} className={p.className}><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 20V10"/></svg>;
+export const IconWall = (p) => <svg viewBox="0 0 24 24" width={p.size||22} height={p.size||22} {...base} className={p.className}><rect x="4" y="4" width="7" height="7" rx="1.3"/><rect x="13" y="4" width="7" height="7" rx="1.3"/><rect x="4" y="13" width="7" height="7" rx="1.3"/><rect x="13" y="13" width="7" height="7" rx="1.3"/></svg>;
+
+export const serviceIcons = { design: IconDesign, plan: IconPlan, wall: IconWall };

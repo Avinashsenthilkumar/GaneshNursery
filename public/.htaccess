@@ -1,0 +1,10 @@
+# Serve the React app's index.html for any route that isn't a real file,
+# so client-side routes like /plants/3 work on refresh and direct links.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
