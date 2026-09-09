@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { plants, findPlant, WA_NUMBER } from '../data/plants.js';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import { plants, findPlant, plantUrl } from '../data/plants.js';
+import { site, waLink } from '../data/site.js';
 import PlantCard from '../components/PlantCard.jsx';
 import Lightbox from '../components/Lightbox.jsx';
-import NotFound from './NotFound.jsx';
 import Reveal from '../components/Reveal.jsx';
-import { IconSun, IconRuler, IconLeaf, IconMinus, IconPlus, IconWhatsapp, IconChevronLeft } from '../components/Icons.jsx';
+import Seo from '../components/Seo.jsx';
+import SmartImage from '../components/SmartImage.jsx';
+import Breadcrumbs from '../components/Breadcrumbs.jsx';
+import NotFound from './NotFound.jsx';
+import {
+  IconSun, IconRuler, IconLeaf, IconDrop, IconSoil,
+  IconMinus, IconPlus, IconWhatsapp
+} from '../components/Icons.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
 
 export default function PlantDetails() {
   const { id } = useParams();
   const plant = findPlant(id);
-  const navigate = useNavigate();
   const { addItem } = useEnquiry();
   const [activeImg, setActiveImg] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -19,60 +25,175 @@ export default function PlantDetails() {
 
   if (!plant) return <NotFound />;
 
-  const message = encodeURIComponent(`Hi Ganesh Nursery, I am interested in ${plant.name} (${plant.botanical}) × ${qty}. Please share availability, sizes and bulk price.`);
+  // Old numeric links (/plants/3) redirect to the readable slug, so there is
+  // one canonical URL per plant instead of two competing ones.
+  if (String(id) !== plant.slug) return <Navigate to={plantUrl(plant)} replace />;
+
+  const waMessage = waLink(
+    `Hi ${site.name}, I am interested in ${plant.name} (${plant.botanical}) × ${qty}. ` +
+    'Please share availability, sizes and bulk price.'
+  );
+
+  const related = plants
+    .filter(p => p.category === plant.category && p.id !== plant.id)
+    .slice(0, 4);
 
   return (
     <main>
+      <Seo
+        title={`${plant.name} (${plant.botanical})`}
+        description={`${plant.description} Starting from ₹${plant.price}. ${plant.light}, typical size ${plant.size}. Available from ${site.name}, ${site.address.city}.`}
+        type="product"
+        image={plant.image}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: plant.name,
+          alternateName: plant.botanical,
+          description: plant.description,
+          image: plant.image,
+          category: plant.category,
+          brand: { '@type': 'Brand', name: site.name },
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'INR',
+            price: plant.price,
+            priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
+            availability: 'https://schema.org/InStock',
+            url: `${site.url}${plantUrl(plant)}`,
+            seller: { '@type': 'Organization', name: site.name }
+          }
+        }}
+      />
+
       <section className="detail-page container">
-        <button className="back-link" onClick={() => navigate(-1)}><IconChevronLeft size={15} /> Back to plants</button>
+        <Breadcrumbs trail={[
+          { label: 'Home', to: '/' },
+          { label: 'Plants', to: '/plants' },
+          { label: plant.name }
+        ]} />
+
         <div className="detail-grid">
           <Reveal as="div" className="detail-gallery">
-            <button type="button" className="detail-image" onClick={() => setLightboxOpen(true)} aria-label="Open photo gallery">
-              <img src={plant.images[activeImg]} alt={plant.name} />
+            <button
+              type="button"
+              className="detail-image"
+              onClick={() => setLightboxOpen(true)}
+              aria-label={`Open larger photo of ${plant.name}`}
+            >
+              <SmartImage
+                src={plant.gallery[activeImg]}
+                alt={plant.name}
+                ratio="4 / 5"
+                loading="eager"
+                fetchPriority="high"
+              />
             </button>
-            <div className="detail-thumbs">
-              {plant.images.map((src, i) => (
-                <button key={src + i} type="button" className={i === activeImg ? 'thumb active' : 'thumb'} onClick={() => setActiveImg(i)} aria-label={`View photo ${i + 1}`}>
-                  <img src={src} alt="" />
-                </button>
-              ))}
-            </div>
+            {plant.gallery.length > 1 && (
+              <div className="detail-thumbs">
+                {plant.gallery.map((src, i) => (
+                  <button
+                    key={`${src}-${i}`}
+                    type="button"
+                    className={i === activeImg ? 'thumb active' : 'thumb'}
+                    onClick={() => setActiveImg(i)}
+                    aria-label={`View photo ${i + 1}`}
+                    aria-current={i === activeImg}
+                  >
+                    <img src={src} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
           </Reveal>
+
           <Reveal as="div" delay={100} className="detail-copy">
             <span className="eyebrow">{plant.category}</span>
             <h1>{plant.name}</h1>
             <p className="botanical big">{plant.botanical}</p>
-            <p className="detail-price">₹{plant.price} <span>starting price</span></p>
-            <p>Healthy nursery-grown planting material available in multiple sizes. Availability can change seasonally; contact the team for current stock and quantity pricing.</p>
-            <div className="detail-points">
-              <div><IconSun size={19} /><b>Light</b><small>{plant.light}</small></div>
-              <div><IconRuler size={19} /><b>Typical size</b><small>{plant.size}</small></div>
-              <div><IconLeaf size={19} /><b>Use</b><small>{plant.category}</small></div>
-            </div>
+
+            <p className="detail-price">
+              ₹{plant.price.toLocaleString('en-IN')}
+              <span>starting price, per sapling</span>
+            </p>
+
+            <p className="detail-intro">{plant.description}</p>
+
+            {/* The care tiles were three near-empty boxes repeating the
+                category. They now carry information a buyer actually needs. */}
+            <dl className="detail-points">
+              <div><dt><IconSun size={18} /> Light</dt><dd>{plant.light}</dd></div>
+              <div><dt><IconDrop size={18} /> Water</dt><dd>{plant.water}</dd></div>
+              <div><dt><IconRuler size={18} /> Supplied at</dt><dd>{plant.size}</dd></div>
+              <div><dt><IconSoil size={18} /> Soil</dt><dd>{plant.soil}</dd></div>
+              <div><dt><IconLeaf size={18} /> Type</dt><dd>{plant.category}</dd></div>
+            </dl>
+
             <div className="qty-row">
-              <span>Quantity</span>
+              <span id="qty-label">Quantity</span>
               <div className="qty-stepper large">
-                <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity"><IconMinus size={14} /></button>
-                <span>{qty}</span>
-                <button type="button" onClick={() => setQty(q => q + 1)} aria-label="Increase quantity"><IconPlus size={14} /></button>
+                <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity">
+                  <IconMinus size={14} />
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  value={qty}
+                  onChange={e => setQty(Math.max(1, Math.round(Number(e.target.value)) || 1))}
+                  aria-labelledby="qty-label"
+                />
+                <button type="button" onClick={() => setQty(q => q + 1)} aria-label="Increase quantity">
+                  <IconPlus size={14} />
+                </button>
               </div>
+              <span className="qty-hint">Bulk pricing from 100+</span>
             </div>
-            <div className="hero-actions">
-              <button type="button" className="btn primary" onClick={() => addItem(plant, qty)}>Add to enquiry</button>
-              <a className="btn ghost" href={`https://wa.me/${WA_NUMBER}?text=${message}`} target="_blank" rel="noreferrer"><IconWhatsapp size={16} /> Enquire on WhatsApp</a>
+
+            <div className="detail-actions">
+              <button type="button" className="btn primary" onClick={() => addItem(plant, qty)}>
+                Add to enquiry
+              </button>
+              <a className="btn ghost" href={waMessage} target="_blank" rel="noreferrer">
+                <IconWhatsapp size={16} /> Ask on WhatsApp
+              </a>
             </div>
-            <Link className="text-link detail-quote-link" to="/contact">Or request a written quote <span aria-hidden>→</span></Link>
+
+            <p className="detail-note">
+              Availability changes with the season. Prices are indicative and depend on size
+              and quantity — we will confirm before anything is committed.
+            </p>
+            <Link className="text-link" to="/contact">Request a written quote<span aria-hidden="true"> →</span></Link>
           </Reveal>
         </div>
       </section>
 
-      <section className="related-section"><div className="container">
-        <div className="section-head"><div><span className="eyebrow">YOU MAY ALSO LIKE</span><h2>More plants to explore</h2></div></div>
-        <div className="plant-grid">{plants.filter(p => p.category === plant.category && p.id !== plant.id).slice(0, 4).map(p => <PlantCard key={p.id} plant={p} />)}</div>
-      </div></section>
+      {related.length > 0 && (
+        <section className="related-section" aria-labelledby="related-heading">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">You may also like</span>
+                <h2 id="related-heading">More {plant.category.toLowerCase()} plants</h2>
+              </div>
+              <Link className="text-link" to={`/plants?category=${plant.category}`}>
+                See all {plant.category}<span aria-hidden="true"> →</span>
+              </Link>
+            </div>
+            <div className="plant-grid">
+              {related.map(p => <PlantCard key={p.id} plant={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {lightboxOpen && (
-        <Lightbox images={plant.images} index={activeImg} name={plant.name} onClose={() => setLightboxOpen(false)} onNav={setActiveImg} />
+        <Lightbox
+          images={plant.gallery}
+          index={activeImg}
+          name={plant.name}
+          onClose={() => setLightboxOpen(false)}
+          onNav={setActiveImg}
+        />
       )}
     </main>
   );

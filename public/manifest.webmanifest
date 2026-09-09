@@ -1,0 +1,24 @@
+{
+  "name": "Ganesh Nursery — Thanjavur",
+  "short_name": "Ganesh Nursery",
+  "description": "Best nursery in Thanjavur. Timber saplings, fruit trees, macadamia, native and indoor plants at affordable prices.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF7EE",
+  "theme_color": "#1B3222",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["shopping", "business", "lifestyle"],
+  "icons": [
+    { "src": "/brand/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Browse plants", "short_name": "Plants", "url": "/plants" },
+    { "name": "Timber saplings", "short_name": "Timber", "url": "/plants?category=Timber" },
+    { "name": "Contact us", "short_name": "Contact", "url": "/contact" }
+  ]
+}

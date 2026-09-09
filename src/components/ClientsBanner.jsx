@@ -4,16 +4,20 @@ import Reveal from './Reveal.jsx';
 
 export default function ClientsBanner() {
   return (
-    <section className="trust-section"><div className="container">
-      <Reveal as="div" className="trust-head">
-        <span className="section-kicker">TRUSTED BY</span>
-        <h2>Our Clients</h2>
-      </Reveal>
-      <div className="client-grid">{clients.map((c, i) => (
-        <Reveal as="div" delay={i * 40} className="client-logo" key={c.name}>
-          <img src={c.logo} alt={c.name} loading="lazy" />
+    <section className="trust-section" aria-labelledby="clients-heading">
+      <div className="container">
+        <Reveal as="div" className="trust-head">
+          <span className="section-kicker">Trusted by</span>
+          <h2 id="clients-heading">Supplying farms, campuses and public projects</h2>
         </Reveal>
-      ))}</div>
-    </div></section>
+        <ul className="client-grid">
+          {clients.map((c, i) => (
+            <Reveal as="li" delay={Math.min(i, 4) * 40} className="client-logo" key={c.name}>
+              <img src={c.logo} alt={c.name} loading="lazy" decoding="async" />
+            </Reveal>
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }

@@ -1,43 +1,72 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { WA_NUMBER } from '../data/plants.js';
-import { IconWhatsapp } from './Icons.jsx';
+import { site, waLink, fullAddress } from '../data/site.js';
+import { IconWhatsapp, IconPhone, IconMail, IconPin } from './Icons.jsx';
+
+// Social links now come from site.js. If a handle is empty the icon is simply
+// not rendered — the old footer shipped href="#" placeholders that looked like
+// working links and went nowhere.
+const socialLabels = { facebook: 'Facebook', instagram: 'Instagram', youtube: 'YouTube' };
+const socialShort = { facebook: 'FB', instagram: 'IG', youtube: 'YT' };
 
 export default function Footer() {
+  const activeSocial = Object.entries(site.social).filter(([, url]) => Boolean(url));
+
   return (
     <footer className="footer">
       <div className="container footer-grid">
-        <div>
+        <div className="footer-col-brand">
           <div className="brand footer-brand">
-            <img className="brand-mark" src="/brand/logo.png" alt="Ganesh Nursery logo" />
-            <div><strong>Ganesh Nursery</strong><small>Greenery for Every Home</small></div>
+            <img className="brand-mark" src="/brand/logo.png" alt="" width="48" height="48" />
+            <span className="brand-text"><strong>{site.name}</strong><small>{site.tagline}</small></span>
           </div>
-          <p>Wholesale plant nursery specialising in hard-to-find and common plants, timber seedlings, fruit trees and landscaping support.</p>
+          <p>
+            Wholesale plant nursery specialising in timber seedlings, fruit trees,
+            native species and landscaping support, supplying farms, institutions
+            and homes across India since {site.foundedYear}.
+          </p>
           <div className="footer-social">
-            <a href={`https://wa.me/${WA_NUMBER}`} target="_blank" rel="noreferrer" aria-label="WhatsApp"><IconWhatsapp size={15} /></a>
-            <a href="#" aria-label="Facebook">FB</a>
-            <a href="#" aria-label="Instagram">IG</a>
+            <a href={waLink()} target="_blank" rel="noreferrer" aria-label="WhatsApp"><IconWhatsapp size={15} /></a>
+            {activeSocial.map(([key, url]) => (
+              <a key={key} href={url} target="_blank" rel="noreferrer" aria-label={socialLabels[key]}>
+                {socialShort[key]}
+              </a>
+            ))}
           </div>
         </div>
-        <div>
+
+        <nav className="footer-col" aria-label="Key links">
           <h4>Key Links</h4>
           <Link to="/about">About Us</Link>
-          <Link to="/plants">Products / Plants</Link>
+          <Link to="/plants">Plants</Link>
           <Link to="/services">Services</Link>
           <Link to="/blogs">Blogs</Link>
           <Link to="/contact">Contact Us</Link>
-        </div>
-        <div>
+        </nav>
+
+        <nav className="footer-col" aria-label="Customer care">
           <h4>Customer Care</h4>
-          <Link to="/contact">Terms and Conditions</Link>
-          <Link to="/contact">Refund Policy</Link>
-          <Link to="/contact">Shipping Policy</Link>
-          <Link to="/contact">Privacy Policy</Link>
+          <Link to="/terms">Terms &amp; Conditions</Link>
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/shipping-policy">Shipping Policy</Link>
+          <Link to="/refund-policy">Refund Policy</Link>
+        </nav>
+
+        <div className="footer-col footer-col-contact">
+          <h4>Reach Us</h4>
+          <a href={`tel:${site.phoneE164}`}><IconPhone size={14} /> {site.phoneDisplay}</a>
+          <a href={`mailto:${site.email}`}><IconMail size={14} /> {site.email}</a>
+          <address>
+            <IconPin size={14} />
+            <span>{fullAddress.join(', ')}</span>
+          </address>
+          <small className="footer-hours">{site.openingHours}</small>
         </div>
       </div>
+
       <div className="footer-bottom container">
-        <span>Powered by Ganesh Nursery © 2026</span>
-        <span>India's Number 1 Choice for Trees | Ganesh Nursery</span>
+        <span>© {new Date().getFullYear()} {site.name}. All rights reserved.</span>
+        <span>Quality saplings from {site.address.city}, {site.address.state}</span>
       </div>
     </footer>
   );

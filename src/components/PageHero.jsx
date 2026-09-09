@@ -3,17 +3,16 @@ import Reveal from './Reveal.jsx';
 
 export function PageHero({ eyebrow, title, copy, image }) {
   const style = image ? {
-    backgroundImage: `linear-gradient(125deg, rgba(14,24,16,.78), rgba(30,54,38,.6)), url(${image})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center'
+    backgroundImage: `linear-gradient(125deg, rgba(12,22,15,.82), rgba(30,54,38,.62)), url(${image})`
   } : undefined;
+
   return (
     <section className={image ? 'page-hero has-image' : 'page-hero'} style={style}>
       <div className="container">
         <Reveal>
-          <span className="eyebrow light">{eyebrow}</span>
+          {eyebrow && <span className="eyebrow light">{eyebrow}</span>}
           <h1>{title}</h1>
-          <p>{copy}</p>
+          {copy && <p>{copy}</p>}
         </Reveal>
       </div>
       {!image && <div className="page-hero-motif" aria-hidden="true" />}
@@ -24,7 +23,7 @@ export function PageHero({ eyebrow, title, copy, image }) {
 export function ValueCard({ icon, title, copy }) {
   return (
     <div className="value-card">
-      <span className="value-icon">{icon}</span>
+      <span className="value-icon" aria-hidden="true">{icon}</span>
       <h3>{title}</h3>
       <p>{copy}</p>
     </div>

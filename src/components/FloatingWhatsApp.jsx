@@ -1,16 +1,18 @@
 import React from 'react';
-import { WA_NUMBER } from '../data/plants.js';
+import { site, waLink } from '../data/site.js';
 import { IconWhatsapp } from './Icons.jsx';
 
 export default function FloatingWhatsApp() {
   return (
     <a
       className="floating-wa"
-      href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hi Ganesh Nursery, I want to enquire about your plants.')}`}
+      href={waLink(`Hi ${site.name}, I want to enquire about your plants.`)}
       target="_blank"
       rel="noreferrer"
+      aria-label="Chat with us on WhatsApp"
     >
-      <IconWhatsapp size={19} /> <span>Chat on WhatsApp</span>
+      <IconWhatsapp size={19} />
+      <span>Chat on WhatsApp</span>
     </a>
   );
 }
