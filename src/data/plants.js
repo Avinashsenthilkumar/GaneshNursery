@@ -126,7 +126,8 @@ const rawPlants = [
     light: 'Full sun to partial shade', water: 'Regular, well spaced',
     soil: 'Deep, well-drained, slightly acidic',
     description: 'Grafted macadamia nut saplings — a high-value orchard crop with strong and growing demand in India. Macadamia needs deep, free-draining soil and protection from strong wind, and grafted trees typically begin bearing in their fourth to sixth year. We supply grafted stock rather than seedlings, because seedling macadamia is slow and unpredictable in nut quality.',
-    image: '/plants/macadamia.jpg'   // photo still needed
+    image: null   // TODO: add /public/plants/macadamia.jpg — until then the
+                  // card shows a branded panel rather than requesting a 404
   }
 ];
 

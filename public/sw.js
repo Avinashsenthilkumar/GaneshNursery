@@ -11,7 +11,7 @@ const ASSETS = `${VERSION}-assets`;
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(SHELL)
-      .then(c => c.addAll(['/', '/brand/logo.png']))
+      .then(c => c.addAll(['/', '/offline.html', '/brand/icon-192.png']))
       .then(() => self.skipWaiting())
       .catch(() => self.skipWaiting())
   );
@@ -43,7 +43,11 @@ self.addEventListener('fetch', event => {
           caches.open(SHELL).then(c => c.put('/', copy)).catch(() => {});
           return res;
         })
-        .catch(() => caches.match('/').then(r => r || Response.error()))
+        // Offline: serve the cached shell if we have it, and a proper offline
+        // page if we do not. Previously this returned Response.error(), which
+        // shows the browser's own "no internet" screen — the clearest possible
+        // signal to a customer that this is a web page, not an app.
+        .catch(() => caches.match('/').then(r => r || caches.match('/offline.html')))
     );
     return;
   }

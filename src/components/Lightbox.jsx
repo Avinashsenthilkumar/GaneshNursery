@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { IconClose, IconChevronLeft, IconChevronRight } from './Icons.jsx';
+import useBackToClose from '../hooks/useBackToClose.js';
 
 export default function Lightbox({ images, index, name, onClose, onNav }) {
   const closeRef = useRef(null);
   const lastFocused = useRef(null);
+
+  // Back closes the photo viewer rather than navigating off the product page.
+  useBackToClose(true, onClose);
 
   const go = useCallback(dir => {
     onNav((index + dir + images.length) % images.length);

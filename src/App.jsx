@@ -23,21 +23,56 @@ const Contact = lazy(() => import('./pages/Contact.jsx'));
 const Policy = lazy(() => import('./pages/Policy.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 
+// Remembers how far down each page you were, keyed by URL.
+const scrollPositions = new Map();
+
 function RouteChangeEffects() {
-  const { pathname, hash } = useLocation();
+  const { pathname, search, hash, key } = useLocation();
   const navType = useNavigationType();
+  const locationKey = `${pathname}${search}`;
+
+  // Save the position continuously while you read, so it is already recorded
+  // by the time you tap through to a product.
+  useEffect(() => {
+    const save = () => scrollPositions.set(locationKey, window.scrollY);
+    window.addEventListener('scroll', save, { passive: true });
+    return () => {
+      save();
+      window.removeEventListener('scroll', save);
+    };
+  }, [locationKey]);
 
   useEffect(() => {
-    // Anchor links were swallowed by the blanket scroll-to-top, and pressing
-    // Back reset you to the top of the previous page instead of returning you
-    // to where you had been reading.
     if (hash) {
       const target = document.querySelector(hash);
-      if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); return undefined; }
     }
-    if (navType === 'POP') return;
+
+    if (navType === 'POP') {
+      // Coming back. Routes are lazy-loaded, so the page you are returning to
+      // may not have painted yet and there would be nothing to scroll to —
+      // previously Back just dumped you at the top of a half-drawn page.
+      // Retry across a few frames until the document is tall enough.
+      const target = scrollPositions.get(locationKey) ?? 0;
+      if (target === 0) { window.scrollTo(0, 0); return undefined; }
+
+      let frames = 0;
+      let raf;
+      const restore = () => {
+        if (document.body.scrollHeight >= target + window.innerHeight || frames > 20) {
+          window.scrollTo({ top: target, behavior: 'auto' });
+          return;
+        }
+        frames += 1;
+        raf = window.requestAnimationFrame(restore);
+      };
+      raf = window.requestAnimationFrame(restore);
+      return () => window.cancelAnimationFrame(raf);
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [pathname, hash, navType]);
+    return undefined;
+  }, [locationKey, hash, navType, key]);
 
   useEffect(() => {
     // Tell screen readers a new page loaded — an SPA gives them no signal
@@ -57,7 +92,17 @@ export default function App() {
         <RouteChangeEffects />
         <Header />
         <div id="main-content" tabIndex={-1}>
-          <Suspense fallback={<div className="route-loading" role="status" aria-live="polite">Loading…</div>}>
+          <Suspense fallback={
+            <div className="route-skeleton" role="status" aria-live="polite" aria-label="Loading">
+              <span className="sk-bar sk-title" />
+              <span className="sk-bar sk-line" />
+              <span className="sk-bar sk-line short" />
+              <div className="sk-grid">
+                <span className="sk-card" /><span className="sk-card" />
+                <span className="sk-card" /><span className="sk-card" />
+              </div>
+            </div>
+          }>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/plants" element={<Plants />} />

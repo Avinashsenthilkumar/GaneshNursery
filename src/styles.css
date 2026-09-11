@@ -1224,7 +1224,6 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
     padding-bottom: var(--safe-bottom);   /* clears the iPhone home indicator */
     transition: transform .28s cubic-bezier(.2, .8, .2, 1);
   }
-  .bottom-nav.is-hidden { transform: translateY(calc(100% + 2px)); }
 
   .bottom-nav-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1727,4 +1726,78 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
 
 @media (max-width: 760px) {
   .page-hero.has-image { min-height: 220px; }
+}
+
+/* ============================================================================
+   APP POLISH — round two
+   ========================================================================= */
+
+/* Skeleton while a lazily-loaded route arrives. A "Loading…" string flashing
+   on screen reads as a web page; a shape that matches what is about to appear
+   reads as an app. */
+.route-skeleton {
+  width: min(1180px, calc(100% - (var(--gutter) * 2)));
+  margin: clamp(2rem, 5vw, 3.5rem) auto;
+  display: grid;
+  gap: 14px;
+}
+.sk-bar, .sk-card {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(100deg, var(--ivory-deep) 30%, #EFE9DA 50%, var(--ivory-deep) 70%);
+  background-size: 220% 100%;
+  animation: skShimmer 1.3s linear infinite;
+}
+.sk-title { height: 34px; width: min(420px, 70%); border-radius: 12px; }
+.sk-line { height: 14px; width: min(560px, 90%); }
+.sk-line.short { width: min(360px, 60%); }
+.sk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--gap);
+  margin-top: 14px;
+}
+.sk-card { height: 280px; border-radius: 20px; }
+@keyframes skShimmer { from { background-position: 200% 0; } to { background-position: -20% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-bar, .sk-card { animation: none; }
+}
+
+/* Overlays have to clear the notch and the home indicator too — the drawer
+   already did, these did not. */
+.lightbox {
+  padding:
+    calc(26px + env(safe-area-inset-top, 0px))
+    calc(26px + env(safe-area-inset-right, 0px))
+    calc(26px + env(safe-area-inset-bottom, 0px))
+    calc(26px + env(safe-area-inset-left, 0px));
+}
+.lightbox-close { top: calc(20px + env(safe-area-inset-top, 0px)); }
+
+@media (max-width: 760px) {
+  /* The install banner sat above the tab bar but ignored the home indicator. */
+  .install-prompt {
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 12px);
+  }
+
+  /* Momentum scrolling inside the sheet, and the sheet itself should not
+     hand its scroll off to the page behind it half way down. */
+  .drawer { overscroll-behavior: contain; }
+  .gallery-rail, .chips, .scroll-rail { overscroll-behavior-x: contain; }
+
+  /* Skeleton should mirror the real two-up product grid on a phone. */
+  .sk-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sk-card { height: 230px; }
+}
+
+/* Installed to the home screen there is no browser chrome, so the header has
+   to own the status bar area and the scrim behind it must be opaque — a
+   translucent bar over a white status strip looks unfinished. */
+@media (display-mode: standalone) {
+  .site-header { background: var(--ivory); }
+  /* Text selection on a long-press feels wrong in an installed app, except
+     where the customer may genuinely want to copy something. */
+  .plant-body, .bottom-nav, .top-strip { -webkit-user-select: none; user-select: none; }
+  .contact-lines, .article-body, .policy-section, .faq-a { -webkit-user-select: text; user-select: text; }
 }

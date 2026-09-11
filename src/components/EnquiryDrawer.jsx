@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
 import { IconClose, IconMinus, IconPlus, IconBasket, IconWhatsapp } from './Icons.jsx';
 import SmartImage from './SmartImage.jsx';
+import useBackToClose from '../hooks/useBackToClose.js';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
@@ -14,6 +15,9 @@ export default function EnquiryDrawer() {
 
   const panelRef = useRef(null);
   const lastFocused = useRef(null);
+
+  // Android Back / back-swipe closes the sheet instead of leaving the page.
+  useBackToClose(drawerOpen, closeDrawer);
 
   // The old drawer had none of this: no Escape key, no focus trap, no scroll
   // lock (the page scrolled behind it), and focus was dumped at the top of the

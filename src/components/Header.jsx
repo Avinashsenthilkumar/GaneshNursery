@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { site, waLink, yearsInBusiness } from '../data/site.js';
 import { IconMenu, IconClose, IconBasket, IconPin, IconLeaf, IconPhone } from './Icons.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
+import useBackToClose from '../hooks/useBackToClose.js';
 
 const links = [
   ['/', 'Home'],
@@ -20,6 +21,9 @@ export default function Header() {
   const { count, openDrawer } = useEnquiry();
   const navRef = useRef(null);
   const toggleRef = useRef(null);
+
+  // Back closes the menu rather than leaving the page behind it.
+  useBackToClose(menuOpen, () => setMenuOpen(false));
 
   // Close the mobile menu on route change. The old version relied on an
   // onClick on each NavLink, which missed browser back/forward navigation.

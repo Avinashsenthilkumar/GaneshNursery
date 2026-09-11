@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { IconLeaf, IconSearch, IconBasket, IconWhatsapp, IconPin } from './Icons.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
 import { site, waLink } from '../data/site.js';
@@ -10,14 +10,12 @@ import { site, waLink } from '../data/site.js';
 // Hidden entirely on desktop, where the top nav is the right pattern.
 export default function BottomNav() {
   const { count, openDrawer } = useEnquiry();
-  const { pathname } = useLocation();
 
-  // Don't cover the content on the contact page, which already has its own
-  // large action buttons.
-  const hidden = pathname === '/contact';
-
+  // The bar stays put on every page. Hiding it on one route (it used to vanish
+  // on /contact) is the opposite of how a tab bar behaves in an app — the
+  // whole point is that it is always in the same place under your thumb.
   return (
-    <nav className={hidden ? 'bottom-nav is-hidden' : 'bottom-nav'} aria-label="Main">
+    <nav className="bottom-nav" aria-label="Main">
       <NavLink to="/" end className="bottom-nav-item">
         <IconLeaf size={21} />
         <span>Home</span>

@@ -74,6 +74,9 @@ export function EnquiryProvider({ children }) {
         qty: amount
       }];
     });
+    // Confirming a tap with a short buzz is what makes an action feel like it
+    // landed. Ignored on browsers that do not support it (including iOS).
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(12);
     flash(`${plant.name} added to your enquiry`);
   }, [flash]);
 
