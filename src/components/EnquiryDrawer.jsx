@@ -8,7 +8,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input, select, [ta
 
 export default function EnquiryDrawer() {
   const {
-    items, removeItem, setQty, clear, estimatedTotal,
+    items, removeItem, setQty, clear, estimatedTotal, hasUnpricedItems,
     drawerOpen, closeDrawer, notes, setNotes, whatsappUrl
   } = useEnquiry();
 
@@ -79,7 +79,7 @@ export default function EnquiryDrawer() {
                   <SmartImage src={i.image} alt="" ratio="1 / 1" className="drawer-item-img" />
                   <div className="drawer-item-body">
                     <strong>{i.name}</strong>
-                    <small>from ₹{i.price.toLocaleString('en-IN')} each</small>
+                    <small>{i.price ? `from ₹${i.price.toLocaleString('en-IN')} each` : 'Price on request'}</small>
                     <div className="qty-stepper">
                       <button type="button" onClick={() => setQty(i.id, i.qty - 1)} aria-label={`Decrease ${i.name} quantity`}>
                         <IconMinus size={13} />
@@ -120,6 +120,7 @@ export default function EnquiryDrawer() {
             </div>
             <p className="drawer-fineprint">
               Indicative only. Final pricing depends on size, season and quantity — the team will confirm on WhatsApp.
+              {hasUnpricedItems && ' Some items in your list are quoted on request and are not counted in this total.'}
             </p>
 
             <a className="btn primary drawer-send" href={whatsappUrl} target="_blank" rel="noreferrer" onClick={closeDrawer}>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { plants, findPlant, plantUrl } from '../data/plants.js';
+import { plants, findPlant, plantUrl, priceLabel } from '../data/plants.js';
 import { site, waLink } from '../data/site.js';
 import PlantCard from '../components/PlantCard.jsx';
 import Lightbox from '../components/Lightbox.jsx';
@@ -10,7 +10,7 @@ import SmartImage from '../components/SmartImage.jsx';
 import Breadcrumbs from '../components/Breadcrumbs.jsx';
 import NotFound from './NotFound.jsx';
 import {
-  IconSun, IconRuler, IconLeaf, IconDrop, IconSoil,
+  IconSun, IconRuler, IconLeaf, IconDrop, IconSoil, IconClock,
   IconMinus, IconPlus, IconWhatsapp
 } from '../components/Icons.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
@@ -42,7 +42,7 @@ export default function PlantDetails() {
     <main>
       <Seo
         title={`${plant.name} (${plant.botanical})`}
-        description={`${plant.description} Starting from ₹${plant.price}. ${plant.light}, typical size ${plant.size}. Available from ${site.name}, ${site.address.city}.`}
+        description={`${plant.description} ${plant.price == null ? 'Price on request.' : `Starting from ₹${plant.price}.`} Supplied at ${plant.size}${plant.bag ? ` in a ${plant.bag}` : ''}. Available from ${site.name}, ${site.address.city}.`}
         type="product"
         image={plant.image}
         jsonLd={{
@@ -57,9 +57,11 @@ export default function PlantDetails() {
           offers: {
             '@type': 'Offer',
             priceCurrency: 'INR',
-            price: plant.price,
-            priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
-            availability: 'https://schema.org/InStock',
+            // Google rejects a null price, so items without one are published
+            // as "ask for a quote" rather than with an invented number.
+            ...(plant.price == null
+              ? { availability: 'https://schema.org/InStock' }
+              : { price: plant.price, priceValidUntil: `${new Date().getFullYear() + 1}-12-31`, availability: 'https://schema.org/InStock' }),
             url: `${site.url}${plantUrl(plant)}`,
             seller: { '@type': 'Organization', name: site.name }
           }
@@ -84,7 +86,8 @@ export default function PlantDetails() {
               <SmartImage
                 src={plant.gallery[activeImg]}
                 alt={plant.name}
-                ratio="4 / 5"
+                ratio="1 / 1"
+                fit="contain"
                 loading="eager"
                 fetchPriority="high"
               />
@@ -110,11 +113,15 @@ export default function PlantDetails() {
           <Reveal as="div" delay={100} className="detail-copy">
             <span className="eyebrow">{plant.category}</span>
             <h1>{plant.name}</h1>
+            {plant.tamil && <p className="detail-tamil" lang="ta">{plant.tamil}</p>}
             <p className="botanical big">{plant.botanical}</p>
 
             <p className="detail-price">
-              ₹{plant.price.toLocaleString('en-IN')}
-              <span>starting price, per sapling</span>
+              {priceLabel(plant)}
+              {plant.mrp && plant.price && plant.mrp > plant.price && (
+                <s className="detail-mrp">₹{plant.mrp.toLocaleString('en-IN')}</s>
+              )}
+              <span>{plant.price == null ? 'message us for current rates' : 'starting price, per sapling'}</span>
             </p>
 
             <p className="detail-intro">{plant.description}</p>
@@ -125,6 +132,8 @@ export default function PlantDetails() {
               <div><dt><IconSun size={18} /> Light</dt><dd>{plant.light}</dd></div>
               <div><dt><IconDrop size={18} /> Water</dt><dd>{plant.water}</dd></div>
               <div><dt><IconRuler size={18} /> Supplied at</dt><dd>{plant.size}</dd></div>
+              {plant.bag && <div><dt><IconLeaf size={18} /> Bag size</dt><dd>{plant.bag}</dd></div>}
+              {plant.age && <div><dt><IconClock size={18} /> Age</dt><dd>{plant.age}</dd></div>}
               <div><dt><IconSoil size={18} /> Soil</dt><dd>{plant.soil}</dd></div>
               <div><dt><IconLeaf size={18} /> Type</dt><dd>{plant.category}</dd></div>
             </dl>

@@ -2,8 +2,13 @@ import React from 'react';
 import Reveal from './Reveal.jsx';
 
 export function PageHero({ eyebrow, title, copy, image }) {
+  // The old scrim was a flat, heavy wash across the whole banner, which turned
+  // these photographs into mud. It is now weighted to the left, where the text
+  // actually sits, so the headline stays readable while the right-hand side of
+  // the photograph is still clearly visible.
   const style = image ? {
-    backgroundImage: `linear-gradient(125deg, rgba(12,22,15,.82), rgba(30,54,38,.62)), url(${image})`
+    backgroundImage:
+      `linear-gradient(100deg, rgba(12,22,15,.88) 0%, rgba(14,26,17,.74) 38%, rgba(16,30,20,.34) 72%, rgba(16,30,20,.2) 100%), url(${image})`
   } : undefined;
 
   return (

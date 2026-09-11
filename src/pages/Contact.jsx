@@ -111,7 +111,7 @@ export default function Contact() {
         eyebrow="Let's talk"
         title="Tell us what you want to grow"
         copy="Share your site, quantity and timeline. We usually reply the same working day."
-        image="/brand/community-banner.jpg"
+        image="/brand/banner-contact.jpg"
       />
 
       <section className="contact-page container">

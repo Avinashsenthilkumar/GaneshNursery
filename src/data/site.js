@@ -6,10 +6,8 @@
 // made once is correct everywhere (header, footer, contact page, WhatsApp
 // links, schema.org markup, sitemap).
 //
-// ACTION REQUIRED — the old code contained two different phone numbers:
-//        WhatsApp link used  +91 99431 99955
-//        Contact page showed +91 99431 19955
-//     They cannot both be right. Confirm the correct one and set it below.
+// RESOLVED — the old code had two conflicting phone numbers. The live site
+//     confirms 9943119955 is correct; the WhatsApp links were wrong.
 // ACTION REQUIRED — it also had two different addresses (Gandarvakottai
 //     613301 on About, Natchathira Nagar Thanjavur 613007 on Contact). Google
 //     penalises inconsistent name/address/phone data, so pick the real one.
@@ -23,9 +21,16 @@ export const site = {
   url: 'https://ganeshnursery.co.in',
 
   // --- Contact -------------------------------------------------------------
-  phoneDisplay: '+91 99431 99955',   // CONFIRM
-  phoneE164: '+919943199955',        // CONFIRM — used by tel: links
-  whatsapp: '919943199955',          // CONFIRM — used by wa.me links
+  // RESOLVED: the live WordPress site shows 9943119955, which matches what the
+  // old contact page said. The number in the previous build's WhatsApp links
+  // was a typo, so every WhatsApp click was going to a wrong number.
+  phoneDisplay: '+91 99431 19955',
+  phoneE164: '+919943119955',        // used by tel: links
+  whatsapp: '919943119955',          // used by wa.me links
+
+  // Second line, as listed on the live site.
+  phoneAltDisplay: '+91 86808 88018',
+  phoneAltE164: '+918680888018',
   email: 'care@ganeshnursery.co.in', // was @ganeshnursery.com (wrong TLD)
 
   // --- Address (one canonical address, used everywhere + in schema) --------

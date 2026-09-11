@@ -172,3 +172,28 @@ codebase: claim and complete your **Google Business Profile** for the nursery
 (name, address, phone, hours and photos matching this site exactly), and
 collect **real Google reviews**. Those drive local map results far more than
 page copy does.
+
+## Media assets
+
+| File | Used by | Notes |
+|---|---|---|
+| `public/brand/nursery-worker.jpg` | FAQ section, homepage | 377 KB, resized from a 9.2 MB original |
+| `public/brand/cpt-seeds.jpg` | CPT Seeds section, homepage | 63 KB |
+| `public/brand/macadamia-handover.jpg` | About page banner | 191 KB |
+| `public/media/cpt-seeds-story.mp4` | CPT Seeds section | 6.7 MB, compressed from 21 MB |
+| `public/media/cpt-seeds-story-poster.jpg` | Video poster frame | 24 KB |
+| `public/brand/home-banner.jpg` | Hero banner, homepage | 122 KB |
+| `public/gallery/*.jpg` | About page carousel (6 photos) | 1.4 MB total |
+
+The video does **not** autoplay and does **not** preload. A poster frame stands
+in until the play button is pressed, so nobody on mobile data downloads 6.7 MB
+they did not ask for. It is also excluded from the service worker cache for the
+same reason.
+
+If you replace the video, re-compress it first — a raw phone recording will be
+20 MB or more and will make the homepage feel broken on a slow connection:
+
+```bash
+ffmpeg -i input.mp4 -vf "scale=432:-2,fps=24" -c:v libx264 -preset veryslow \
+  -crf 32 -pix_fmt yuv420p -c:a aac -b:a 48k -ac 1 -movflags +faststart output.mp4
+```

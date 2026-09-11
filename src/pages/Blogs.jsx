@@ -19,7 +19,7 @@ export default function Blogs() {
         eyebrow="From the nursery"
         title="Plant knowledge that grows with you"
         copy="Practical stories, timber insights and ideas to help you choose, plant and care for better greenery."
-        image="/brand/community-banner.jpg"
+        image="/brand/banner-about.jpg"
       />
 
       <section className="blogs-page container">

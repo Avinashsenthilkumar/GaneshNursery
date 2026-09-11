@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { IconSun, IconRuler, IconPlus, IconCheck } from './Icons.jsx';
+import { IconRuler, IconPlus, IconCheck } from './Icons.jsx';
 import SmartImage from './SmartImage.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
-import { plantUrl } from '../data/plants.js';
+import { plantUrl, priceLabel } from '../data/plants.js';
 
 export default function PlantCard({ plant }) {
   const { items, addItem } = useEnquiry();
@@ -13,14 +13,15 @@ export default function PlantCard({ plant }) {
   return (
     <article className="plant-card">
       {/*
-        The old markup nested a <button> inside the <Link>, which is invalid
-        HTML (interactive content inside an anchor) and confused keyboard and
-        screen-reader users — the add button was announced as part of the link.
-        The button is now a sibling, positioned over the image.
+        The add button sits as a sibling of the link, not inside it. Nesting a
+        <button> in an <a> is invalid HTML and made screen readers announce the
+        two as one control.
       */}
       <div className="plant-image">
         <Link to={href} className="plant-image-link" tabIndex={-1} aria-hidden="true">
-          <SmartImage src={plant.image} alt="" ratio="4 / 3" />
+          {/* "contain", not "cover": these photos carry height arrows and bag
+              sizes printed on them, and cropping would cut that information off. */}
+          <SmartImage src={plant.image} alt="" ratio="1 / 1" fit="contain" />
         </Link>
         <span className="plant-tag">{plant.category}</span>
         {plant.popular && <span className="plant-badge">Popular</span>}
@@ -36,16 +37,31 @@ export default function PlantCard({ plant }) {
       </div>
 
       <div className="plant-body">
-        <span className="botanical">{plant.botanical}</span>
         <h3><Link to={href}>{plant.name}</Link></h3>
+        {plant.tamil && <span className="plant-tamil" lang="ta">{plant.tamil}</span>}
+        <span className="botanical">{plant.botanical}</span>
+
         <div className="plant-meta">
-          <span><IconSun size={13} />{plant.light}</span>
           <span><IconRuler size={13} />{plant.size}</span>
+          {plant.bag && <span>{plant.bag}</span>}
+          {plant.age && <span>{plant.age}</span>}
         </div>
+
         <div className="plant-footer">
-          <div>
-            <small>Starting from</small>
-            <strong>₹{plant.price.toLocaleString('en-IN')}</strong>
+          <div className="plant-price">
+            {plant.price == null ? (
+              <strong className="on-request">Price on request</strong>
+            ) : (
+              <>
+                <small>Starting from</small>
+                <span className="price-row">
+                  <strong>{priceLabel(plant)}</strong>
+                  {plant.mrp && plant.mrp > plant.price && (
+                    <s aria-label={`Usual price ${plant.mrp} rupees`}>₹{plant.mrp}</s>
+                  )}
+                </span>
+              </>
+            )}
           </div>
           <Link to={href} className="small-btn">Details</Link>
         </div>

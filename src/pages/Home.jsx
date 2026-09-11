@@ -9,10 +9,11 @@ import BlogCard from '../components/BlogCard.jsx';
 import Testimonials, { hasTestimonials } from '../components/Testimonials.jsx';
 import ClientsBanner from '../components/ClientsBanner.jsx';
 import Faq, { faqs } from '../components/Faq.jsx';
+import CptSeeds from '../components/CptSeeds.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Seo from '../components/Seo.jsx';
 import SmartImage from '../components/SmartImage.jsx';
-import { IconLeaf, IconPin, IconCheck } from '../components/Icons.jsx';
+import { IconPin, IconCheck, IconPhone } from '../components/Icons.jsx';
 
 // Structured data so Google can present the nursery as a local business with
 // address, hours and phone. The old site had none, which is a large part of
@@ -79,20 +80,57 @@ export default function Home() {
         extraJsonLd={faqSchema}
       />
 
-      <section className="hero container">
-        <Reveal as="div" className="hero-copy">
-          <span className="eyebrow">{site.name} · Est. {site.foundedYear}</span>
-          <h1>Grow a greener home.<br /><em>Grow a stronger future.</em></h1>
-          <p>
-            Timber saplings, fruit trees, macadamia, native species, flowering and
-            indoor plants — plus complete landscape design and maintenance — from a
-            nursery in {site.address.city} with {yearsInBusiness} years behind it.
-            Affordable retail prices, and proper wholesale rates in bulk.
-          </p>
-          <div className="hero-actions">
-            <Link className="btn primary" to="/plants">Explore plants</Link>
-            <Link className="btn ghost" to="/contact">Talk to our team</Link>
-          </div>
+      {/* Full-bleed banner hero, matching the layout of the live site: the
+          grower artwork runs edge to edge with the message sitting over it.
+          A gradient scrim keeps the white text readable over the yellow — the
+          artwork alone does not give enough contrast to read against. */}
+      <section className="hero-banner">
+        <img
+          className="hero-banner-img"
+          src="/brand/home-banner.jpg"
+          alt={`${site.name} growers holding tree saplings`}
+          width="1600"
+          height="571"
+          fetchpriority="high"
+          decoding="async"
+        />
+        <div className="hero-banner-scrim" aria-hidden="true" />
+
+        <div className="container hero-banner-inner">
+          <Reveal as="div" className="hero-banner-copy">
+            <span className="eyebrow light">A garden like never before</span>
+            <h1>
+              Our {yearsInBusiness}+ years of experience
+              <br />
+              will be a strong support to you
+            </h1>
+            <p>
+              Quality nursery plants nurtured with care, experience and sustainable
+              practices — sandalwood, red sandal, karungali, rosewood, khaya and
+              guava saplings from {site.address.city}.
+            </p>
+
+            <div className="hero-banner-phones">
+              <a href={`tel:${site.phoneE164}`}>
+                <IconPhone size={16} /> {site.phoneDisplay}
+              </a>
+              <a href={`tel:${site.phoneAltE164}`}>
+                <IconPhone size={16} /> {site.phoneAltDisplay}
+              </a>
+            </div>
+
+            <div className="hero-actions">
+              <Link className="btn primary" to="/plants">Explore plants</Link>
+              <Link className="btn light" to="/contact">Talk to our team</Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* The proof points and numbers that used to sit inside the split hero
+          now form their own strip, so the banner stays uncluttered. */}
+      <section className="hero-strip">
+        <div className="container hero-strip-inner">
           <ul className="hero-proof">
             <li><IconCheck size={14} /> Bulk &amp; institutional supply</li>
             <li><IconCheck size={14} /> Species matched to your soil</li>
@@ -103,30 +141,7 @@ export default function Home() {
             <div><b>100+</b><span>Plant varieties</span></div>
             <div><b>Crores</b><span>Of saplings raised</span></div>
           </div>
-        </Reveal>
-
-        <Reveal as="div" delay={120} className="hero-art">
-          {/* The hero image is the Largest Contentful Paint element, so it now
-              loads eagerly at high priority instead of arriving as a lazy CSS
-              background — that was the biggest single load-speed problem. */}
-          <div className="hero-photo">
-            <SmartImage
-              src="/brand/team-photo.jpg"
-              alt={`The ${site.name} team at the nursery`}
-              ratio="4 / 5"
-              loading="eager"
-              fetchPriority="high"
-            />
-          </div>
-          <div className="hero-card">
-            <span className="hero-card-icon"><IconLeaf size={18} /></span>
-            <strong>Since {site.foundedYear}</strong>
-            <span>Supplying farms, campuses &amp; homes</span>
-          </div>
-          <svg className="hero-branch" viewBox="0 0 200 200" aria-hidden="true">
-            <path d="M10 190C60 150 70 90 40 20M40 20c10 20 5 35-10 40M40 20c15 8 30 4 38-12M75 110c18 4 32-4 38-20M75 110c4 20-6 34-22 40" />
-          </svg>
-        </Reveal>
+        </div>
       </section>
 
       <ClientsBanner />
@@ -134,7 +149,7 @@ export default function Home() {
       <section className="split-section container">
         <Reveal as="div" className="image-stack">
           <div className="big-image">
-            <SmartImage src="/brand/community-banner.jpg" alt="Growers holding saplings at the nursery" ratio="4 / 5" />
+            <SmartImage src="/brand/team-photo.jpg" alt={`A ${site.name} grower in the sapling beds`} ratio="4 / 5" />
           </div>
           <div className="experience-badge"><b>{yearsInBusiness}+</b><span>years of<br />experience</span></div>
         </Reveal>
@@ -156,13 +171,15 @@ export default function Home() {
         </Reveal>
       </section>
 
+      <CptSeeds />
+
       <section className="catalog-teaser" aria-labelledby="collection-heading">
         <div className="container">
           <Reveal as="div" className="section-head">
             <div>
               <span className="eyebrow">Plant collection</span>
               <h2 id="collection-heading">Pick your next green companion</h2>
-              <p>Timber, fruit, flowering, indoor and native plants with clear starting prices.</p>
+              <p>Sandalwood, red sandal, karungali, rosewood, khaya and guava — with the real age, height and bag size for each.</p>
             </div>
             <Link className="btn primary" to="/plants">View all plants</Link>
           </Reveal>

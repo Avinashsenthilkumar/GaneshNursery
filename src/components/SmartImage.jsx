@@ -11,6 +11,7 @@ export default function SmartImage({
   src,
   alt = '',
   ratio,
+  fit,
   className = '',
   loading = 'lazy',
   fetchPriority,
@@ -21,7 +22,7 @@ export default function SmartImage({
 
   return (
     <span
-      className={`smart-img ${state} ${className}`}
+      className={`smart-img ${state}${fit === 'contain' ? ' is-contain' : ''} ${className}`}
       style={ratio ? { aspectRatio: ratio } : undefined}
     >
       {state !== 'error' && (

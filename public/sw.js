@@ -49,6 +49,8 @@ self.addEventListener('fetch', event => {
   }
 
   // Hashed build assets and images: cache first, they never change in place.
+  // Video is deliberately excluded — caching 6.7 MB of footage on a metered
+  // connection is not a favour to anyone.
   if (/\.(js|css|png|jpg|jpeg|webp|svg|woff2)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then(hit => hit || fetch(request).then(res => {

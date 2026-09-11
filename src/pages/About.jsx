@@ -5,6 +5,8 @@ import Testimonials, { hasTestimonials } from '../components/Testimonials.jsx';
 import { testimonials } from '../data/content.js';
 import { site, yearsInBusiness, fullAddress, mapsLink } from '../data/site.js';
 import Reveal from '../components/Reveal.jsx';
+import SmartImage from '../components/SmartImage.jsx';
+import AboutGallery from '../components/AboutGallery.jsx';
 import Seo from '../components/Seo.jsx';
 import { IconPin, IconLeaf, IconClock } from '../components/Icons.jsx';
 
@@ -26,8 +28,32 @@ export default function About() {
         eyebrow="Our story"
         title="Deep roots. Better plants. Bigger impact."
         copy="A wholesale nursery specialising in hard-to-find and everyday species alike, with a focus on seeds, saplings and live roots."
-        image="/brand/community-banner.jpg"
+        image="/brand/banner-about.jpg"
       />
+
+      <section className="about-banner container" aria-labelledby="about-banner-heading">
+        <Reveal as="div" className="about-banner-photo">
+          <SmartImage
+            src="/brand/macadamia-handover.jpg"
+            alt="A Ganesh Nursery representative handing over a grafted macadamia sapling to a grower"
+            ratio="16 / 9"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </Reveal>
+        <Reveal as="div" delay={90} className="about-banner-copy">
+          <h2 id="about-banner-heading">Growing quality plants for over {yearsInBusiness} years</h2>
+          <p>
+            With more than four decades behind us, {site.name} is built around one
+            thing: growing and supplying healthy, high-quality planting material.
+            Careful propagation, sustainable practice and straight answers are what
+            give our customers strong growth and long-lasting results — whether that
+            is a single macadamia sapling or a plantation of several thousand trees.
+          </p>
+        </Reveal>
+      </section>
+
+      <AboutGallery />
 
       <section className="about-content container">
         <Reveal as="div" className="about-story">

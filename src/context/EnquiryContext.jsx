@@ -17,7 +17,7 @@ function sanitise(raw) {
       slug: typeof i.slug === 'string' ? i.slug : '',
       name: typeof i.name === 'string' ? i.name : 'Plant',
       botanical: typeof i.botanical === 'string' ? i.botanical : '',
-      price: Number.isFinite(Number(i.price)) ? Number(i.price) : 0,
+      price: Number.isFinite(Number(i.price)) ? Number(i.price) : null,
       image: typeof i.image === 'string' ? i.image : '',
       qty: Math.min(MAX_QTY, Math.max(1, Math.round(Number(i.qty)) || 1))
     }))
@@ -69,7 +69,7 @@ export function EnquiryProvider({ children }) {
         slug: plant.slug,
         name: plant.name,
         botanical: plant.botanical,
-        price: plant.price,
+        price: plant.price ?? null,
         image: plant.image,
         qty: amount
       }];
@@ -93,11 +93,17 @@ export function EnquiryProvider({ children }) {
   const dismissToast = useCallback(() => setToast(null), []);
 
   const count = useMemo(() => items.reduce((sum, i) => sum + i.qty, 0), [items]);
-  const estimatedTotal = useMemo(() => items.reduce((sum, i) => sum + i.qty * i.price, 0), [items]);
+  // Items with no published price are simply left out of the estimate rather
+  // than counted as zero, which would understate the total.
+  const estimatedTotal = useMemo(
+    () => items.reduce((sum, i) => sum + (i.price ? i.qty * i.price : 0), 0),
+    [items]
+  );
+  const hasUnpricedItems = useMemo(() => items.some(i => !i.price), [items]);
 
   const whatsappUrl = useMemo(() => {
     if (items.length === 0) return waLink();
-    const lines = items.map(i => `• ${i.name} (${i.botanical}) × ${i.qty} — from ₹${i.price} each`);
+    const lines = items.map(i => `• ${i.name} (${i.botanical}) × ${i.qty}${i.price ? ` — from ₹${i.price} each` : ' — price on request'}`);
     let message =
       `Hi ${site.name}, I would like to enquire about:\n\n${lines.join('\n')}\n\n` +
       `Estimated starting total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
@@ -107,11 +113,11 @@ export function EnquiryProvider({ children }) {
 
   const value = useMemo(() => ({
     items, addItem, removeItem, setQty, clear,
-    count, estimatedTotal,
+    count, estimatedTotal, hasUnpricedItems,
     drawerOpen, openDrawer, closeDrawer, setDrawerOpen,
     notes, setNotes, whatsappUrl,
     toast, dismissToast
-  }), [items, addItem, removeItem, setQty, clear, count, estimatedTotal,
+  }), [items, addItem, removeItem, setQty, clear, count, estimatedTotal, hasUnpricedItems,
     drawerOpen, openDrawer, closeDrawer, notes, whatsappUrl, toast, dismissToast]);
 
   return <EnquiryContext.Provider value={value}>{children}</EnquiryContext.Provider>;

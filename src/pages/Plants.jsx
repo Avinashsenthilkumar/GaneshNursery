@@ -54,8 +54,12 @@ export default function Plants() {
       const haystack = `${p.name} ${p.botanical} ${p.category}`.toLowerCase();
       return matchesCategory && (!q || haystack.includes(q));
     });
-    if (sort === 'low') data = [...data].sort((a, b) => a.price - b.price);
-    if (sort === 'high') data = [...data].sort((a, b) => b.price - a.price);
+    // Items quoted on request have no number to sort by, so they go last in
+    // both directions rather than being treated as ₹0.
+    const lo = p => (p.price == null ? Number.POSITIVE_INFINITY : p.price);
+    const hi = p => (p.price == null ? Number.NEGATIVE_INFINITY : p.price);
+    if (sort === 'low') data = [...data].sort((a, b) => lo(a) - lo(b));
+    if (sort === 'high') data = [...data].sort((a, b) => hi(b) - hi(a));
     if (sort === 'name') data = [...data].sort((a, b) => a.name.localeCompare(b.name));
     return data;
   }, [category, query, sort]);
@@ -67,7 +71,7 @@ export default function Plants() {
     <main>
       <Seo
         title="All Plants & Timber Saplings in Thanjavur"
-        description={`Buy affordable plants in Thanjavur — teak, rosewood, mahogany and other timber saplings, mango, macadamia and fruit trees, native, flowering and indoor plants. Starting prices shown, wholesale rates on bulk.`}
+        description={`Buy sandalwood, red sandal, karungali, rosewood, khaya and guava saplings in Thanjavur. Every listing shows the age, height and bag size we supply. Affordable prices, wholesale rates on bulk.`}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'ItemList',
@@ -83,9 +87,10 @@ export default function Plants() {
       />
 
       <PageHero
+        image="/brand/banner-plants.jpg"
         eyebrow="The plant house"
         title="Plants for every purpose"
-        copy="Timber, fruit, native, flowering and indoor plants. Prices shown are starting prices and vary with size, season and quantity — tell us what you need and we will quote it properly."
+        copy="Sandalwood, red sandal, karungali, rosewood, khaya and guava. Every listing shows the age, height and bag size we actually supply. Prices are starting prices and vary with quantity — tell us what you need and we will quote it properly."
       />
 
       <section className="catalog-page container">
@@ -111,7 +116,7 @@ export default function Plants() {
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search teak, mango, indoor…"
+                placeholder="Search sandalwood, karungali, guava…"
                 aria-label="Search plants by name or botanical name"
               />
               {query && (
