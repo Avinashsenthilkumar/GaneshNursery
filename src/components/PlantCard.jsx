@@ -9,6 +9,8 @@ export default function PlantCard({ plant }) {
   const { items, addItem } = useEnquiry();
   const inList = items.some(i => i.id === plant.id);
   const href = plantUrl(plant);
+  const sizeCount = plant.variants.length;
+  const multi = sizeCount > 1;
 
   return (
     <article className="plant-card">
@@ -25,15 +27,28 @@ export default function PlantCard({ plant }) {
         </Link>
         <span className="plant-tag">{plant.category}</span>
         {plant.popular && <span className="plant-badge">Popular</span>}
-        <button
-          type="button"
-          className={inList ? 'plant-add is-added' : 'plant-add'}
-          onClick={() => addItem(plant)}
-          aria-label={inList ? `${plant.name} is in your enquiry — add another` : `Add ${plant.name} to your enquiry`}
-          title={inList ? 'Add another' : 'Add to enquiry'}
-        >
-          {inList ? <IconCheck size={16} /> : <IconPlus size={16} />}
-        </button>
+
+        {/*
+          A plant sold in eight grades from ₹75 to ₹585 has no single "add this"
+          — quietly adding the cheapest would put the wrong rate in the customer's
+          list and the wrong expectation in their head. Multi-size plants send you
+          to the size table instead; single-size plants still add in one tap.
+        */}
+        {multi ? (
+          <Link to={`${href}#sizes`} className="plant-add is-choose" title="Choose a size" aria-label={`Choose a size for ${plant.name}`}>
+            <IconPlus size={16} />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className={inList ? 'plant-add is-added' : 'plant-add'}
+            onClick={() => addItem(plant)}
+            aria-label={inList ? `${plant.name} is in your enquiry — add another` : `Add ${plant.name} to your enquiry`}
+            title={inList ? 'Add another' : 'Add to enquiry'}
+          >
+            {inList ? <IconCheck size={16} /> : <IconPlus size={16} />}
+          </button>
+        )}
       </div>
 
       <div className="plant-body">
@@ -43,8 +58,11 @@ export default function PlantCard({ plant }) {
 
         <div className="plant-meta">
           <span><IconRuler size={13} />{plant.size}</span>
+          {/* Bag and age are only printed when every grade shares them —
+              otherwise the card would advertise one variant's bag as the plant's. */}
           {plant.bag && <span>{plant.bag}</span>}
           {plant.age && <span>{plant.age}</span>}
+          {multi && <span className="plant-sizes">{sizeCount} sizes</span>}
         </div>
 
         <div className="plant-footer">
@@ -53,7 +71,7 @@ export default function PlantCard({ plant }) {
               <strong className="on-request">Price on request</strong>
             ) : (
               <>
-                <small>Starting from</small>
+                <small>{plant.hasPriceRange ? `From · up to ₹${plant.priceTo.toLocaleString('en-IN')}` : 'Price'}</small>
                 <span className="price-row">
                   <strong>{priceLabel(plant)}</strong>
                   {plant.mrp && plant.mrp > plant.price && (
@@ -63,7 +81,7 @@ export default function PlantCard({ plant }) {
               </>
             )}
           </div>
-          <Link to={href} className="small-btn">Details</Link>
+          <Link to={href} className="small-btn">{multi ? 'Sizes' : 'Details'}</Link>
         </div>
       </div>
     </article>

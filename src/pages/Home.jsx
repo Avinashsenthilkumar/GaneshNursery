@@ -106,8 +106,8 @@ export default function Home() {
             </h1>
             <p>
               Quality nursery plants nurtured with care, experience and sustainable
-              practices — sandalwood, red sandal, karungali, rosewood, khaya and
-              guava saplings from {site.address.city}.
+              practices — sandalwood, red sandal, karungali, teak, mahogany, mango
+              and guava saplings from {site.address.city}.
             </p>
 
             <div className="hero-banner-phones">
@@ -179,7 +179,7 @@ export default function Home() {
             <div>
               <span className="eyebrow">Plant collection</span>
               <h2 id="collection-heading">Pick your next green companion</h2>
-              <p>Sandalwood, red sandal, karungali, rosewood, khaya and guava — with the real age, height and bag size for each.</p>
+              <p>Timber and fruit — sandalwood, red sandal, karungali, teak, mahogany, mango, guava and more, with every available height priced separately.</p>
             </div>
             <Link className="btn primary" to="/plants">View all plants</Link>
           </Reveal>

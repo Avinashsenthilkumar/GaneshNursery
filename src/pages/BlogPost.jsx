@@ -54,7 +54,7 @@ export default function BlogPost() {
         </header>
 
         <div className="article-hero">
-          <SmartImage src={post.image} alt="" ratio="16 / 9" loading="eager" fetchPriority="high" />
+          <SmartImage src={post.image} alt="" ratio="16 / 9" fit={post.imageFit} loading="eager" fetchPriority="high" />
         </div>
 
         <div className="article-body">

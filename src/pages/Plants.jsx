@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { plants, categories } from '../data/plants.js';
+import { plants, categories, searchText, PRICE_LIST } from '../data/plants.js';
 import PlantCard from '../components/PlantCard.jsx';
 import { PageHero } from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
@@ -51,13 +51,17 @@ export default function Plants() {
     const q = query.trim().toLowerCase();
     let data = plants.filter(p => {
       const matchesCategory = category === 'All' || p.category === category;
-      const haystack = `${p.name} ${p.botanical} ${p.category}`.toLowerCase();
-      return matchesCategory && (!q || haystack.includes(q));
+      // Searching now covers the Tamil name, the seed source and every variety
+      // and height under the plant — so "rumani", "7 ft" and "நாவல்" all land
+      // somewhere instead of returning an empty page.
+      return matchesCategory && (!q || searchText(p).includes(q));
     });
     // Items quoted on request have no number to sort by, so they go last in
-    // both directions rather than being treated as ₹0.
-    const lo = p => (p.price == null ? Number.POSITIVE_INFINITY : p.price);
-    const hi = p => (p.price == null ? Number.NEGATIVE_INFINITY : p.price);
+    // both directions rather than being treated as ₹0. A plant sold in several
+    // grades sorts on its cheapest grade going up and its dearest going down,
+    // which is what "low to high" means to someone shopping by budget.
+    const lo = p => (p.priceFrom == null ? Number.POSITIVE_INFINITY : p.priceFrom);
+    const hi = p => (p.priceTo == null ? Number.NEGATIVE_INFINITY : p.priceTo);
     if (sort === 'low') data = [...data].sort((a, b) => lo(a) - lo(b));
     if (sort === 'high') data = [...data].sort((a, b) => hi(b) - hi(a));
     if (sort === 'name') data = [...data].sort((a, b) => a.name.localeCompare(b.name));
@@ -70,8 +74,8 @@ export default function Plants() {
   return (
     <main>
       <Seo
-        title="All Plants & Timber Saplings in Thanjavur"
-        description={`Buy sandalwood, red sandal, karungali, rosewood, khaya and guava saplings in Thanjavur. Every listing shows the age, height and bag size we supply. Affordable prices, wholesale rates on bulk.`}
+        title="All Plants, Timber & Fruit Saplings in Thanjavur"
+        description={`Buy sandalwood, red sandal, karungali, teak, mahogany, mango, guava and coconut saplings in Thanjavur. Every plant lists each available height with its own bag size, age and rate. Wholesale rates on bulk.`}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'ItemList',
@@ -90,7 +94,7 @@ export default function Plants() {
         image="/brand/banner-plants.jpg"
         eyebrow="The plant house"
         title="Plants for every purpose"
-        copy="Sandalwood, red sandal, karungali, rosewood, khaya and guava. Every listing shows the age, height and bag size we actually supply. Prices are starting prices and vary with quantity — tell us what you need and we will quote it properly."
+        copy="Timber and fruit — sandalwood, red sandal, karungali, teak, mahogany, mango, guava and more. Most are grown in several heights, and each height has its own bag size, age and rate. Open any plant to see the full size list."
       />
 
       <section className="catalog-page container">
@@ -138,7 +142,7 @@ export default function Plants() {
           </span>
           {isFiltered
             ? <button type="button" className="text-link" onClick={clearAll}>Clear filters</button>
-            : <span>Bulk &amp; institutional orders available</span>}
+            : <span>{PRICE_LIST.season} rates · bulk &amp; institutional orders available</span>}
         </div>
 
         {filtered.length === 0 ? (

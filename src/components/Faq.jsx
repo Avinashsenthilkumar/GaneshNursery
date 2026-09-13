@@ -17,7 +17,7 @@ export const faqs = [
   },
   {
     q: 'What kind of nursery plants do you provide?',
-    a: 'Timber saplings — sandalwood, red sandal, karungali (Ceylon ebony), rosewood and khaya senegalensis — plus fruit trees including Koyya L49 guava and grafted macadamia. Hundreds of varieties in all, and we regularly source species that are not listed on this site, so ask if you do not see what you need.'
+    a: 'Timber saplings — sandalwood, red sandal, karungali (Ceylon ebony), rosewood, Nilambur and Burma teak, Indian and Khaya mahogany, venghai and African blackwood — plus fruit trees: mango in four varieties, L-49 guava, lemon, sweet lime, naaval, sapota, Panruti jack, tender-coconut dwarf and grafted macadamia. Most are grown in several heights, each at its own rate. We regularly source species that are not listed here, so ask if you do not see what you need.'
   },
   {
     q: 'Where is your nursery located in Thanjavur?',

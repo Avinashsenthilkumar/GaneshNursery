@@ -495,6 +495,15 @@ h3 { font-family: var(--font-display); font-weight: 560; line-height: 1.25; }
 }
 .plant-add:hover { background: var(--forest); color: var(--ivory); transform: scale(1.06); }
 .plant-add.is-added { background: var(--forest); color: var(--gold-light); }
+.plant-add.is-choose { text-decoration: none; }
+
+/* A plant sold in several grades says so on the card, so nobody is surprised
+   by a second price on the detail page. */
+.plant-sizes {
+  background: var(--sage-soft); color: var(--forest-2);
+  border-radius: var(--radius-pill); padding: 2px 9px;
+  font-weight: 700; font-size: .68rem;
+}
 
 .plant-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
 .botanical {
@@ -672,7 +681,29 @@ h3 { font-family: var(--font-display); font-weight: 560; line-height: 1.25; }
 
 /* --------------------------------------------------------- plant details -- */
 .detail-page { padding-block: clamp(1.75rem, 3vw, 2.75rem) var(--section-y); }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 4vw, 4.5rem); align-items: start; }
+
+/* The product page gets a wider container than the rest of the site. It is the
+   only page that has to show a photograph, a spec sheet and a price table at
+   the same time, and 1180px forced all three into a column each too narrow to
+   read. Everywhere else stays at 1180 — a wide measure is bad for body copy. */
+.detail-container { width: min(1560px, calc(100% - (var(--gutter) * 2))); }
+
+/* Clamped by default so the page opens with the photo, the price and the size
+   picker all visible instead of two paragraphs of prose pushing them under. */
+.detail-intro.is-clamped {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+.detail-more {
+  font-size: .78rem; font-weight: 700; color: var(--gold);
+  padding: 4px 0; margin-top: 2px;
+}
+.detail-more:hover { color: var(--forest); }
+
+/* The photo carries more weight than an even split gave it: on a catalogue
+   page the picture is what people judge the stock by, and a 50/50 grid left it
+   smaller than the block of body copy beside it. */
+.detail-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(2rem, 4vw, 4.5rem); align-items: start; }
 .detail-gallery { display: grid; gap: 12px; position: sticky; top: calc(var(--header-h) + 20px); }
 .detail-image { border-radius: 26px; overflow: hidden; width: 100%; display: block; }
 .detail-thumbs { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -729,6 +760,237 @@ h3 { font-family: var(--font-display); font-weight: 560; line-height: 1.25; }
 
 .detail-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 6px 0 18px; }
 .detail-actions .btn { flex: 1 1 200px; }
+
+
+/* ------------------------------------------------- seed expedition reel -- */
+/* Field footage, shot vertically on a phone. Presented in the aspect ratio it
+   was filmed in rather than cropped into a landscape frame — a 9:16 clip
+   stretched wide loses the top and bottom of every shot, which in this case is
+   the canopy and the ground. */
+.expedition {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 54px);
+  align-items: center;
+  padding-block: var(--section-y);
+}
+.expedition-frame {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #0E1A11;
+  box-shadow: var(--shadow);
+}
+.expedition-frame video,
+.expedition-cover img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.expedition-cover {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; display: block; padding: 0;
+}
+.expedition-cover::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10, 18, 12, .12), rgba(10, 18, 12, .66));
+  transition: background .25s;
+}
+.expedition-cover:hover::after { background: linear-gradient(180deg, rgba(10, 18, 12, .05), rgba(10, 18, 12, .5)); }
+.expedition-play {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%); z-index: 2;
+  width: 68px; height: 68px; border-radius: 50%;
+  background: rgba(251, 247, 238, .95); color: var(--forest);
+  display: grid; place-items: center;
+  padding-left: 4px;
+  transition: transform .25s, background .25s;
+}
+.expedition-cover:hover .expedition-play { transform: translate(-50%, -50%) scale(1.08); background: #fff; }
+.expedition-cover-label {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  padding: 18px; color: #EDF3E9; font-size: .8rem; font-weight: 600;
+  text-align: left;
+}
+.expedition-copy h2 { font-size: var(--step-3); margin: 6px 0 16px; }
+.expedition-copy p { color: var(--muted); line-height: 1.8; margin: 0 0 14px; }
+
+@media (max-width: 860px) {
+  .expedition { grid-template-columns: 1fr; }
+  /* Full-bleed portrait video on a phone would push the copy two screens down,
+     so the frame is capped and centred instead. */
+  .expedition-frame { max-width: 300px; margin-inline: auto; }
+}
+
+/* ---------------------------------------------------------- size picker -- */
+/* One plant, many heights, one rate each. The grades run left to right as a
+   rail rather than down the page: eight stacked rows pushed the care details
+   and the buy button below the fold, and turned "how much more is the 6 ft?"
+   into a scroll instead of a glance. Selecting a tile fills the single panel
+   underneath, which carries its own quantity and its own WhatsApp button. */
+.size-picker {
+  margin: clamp(30px, 4vw, 48px) 0 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  overflow: hidden;
+  scroll-margin-top: 90px;   /* so /plants/x#sizes clears the sticky header */
+}
+.size-picker-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+  padding: 18px 18px 16px;
+  background: linear-gradient(180deg, var(--sage-soft), transparent);
+  border-bottom: 1px solid var(--line);
+}
+.size-picker-head h2 { font-size: var(--step-1); margin: 3px 0 0; color: var(--ink); }
+.size-picker-range {
+  font-family: var(--font-display); font-size: 1.05rem;
+  color: var(--gold); font-weight: 600; white-space: nowrap;
+}
+
+/* ---- the rail ---- */
+.size-rail-wrap {
+  position: relative;
+  border-bottom: 1px solid var(--line);
+}
+/* A soft fade on the right edge is what tells someone there is more to scroll
+   to. Without it a cut-off tile just looks like a layout bug. */
+.size-rail-wrap::after {
+  content: "";
+  position: absolute; top: 0; right: 0; bottom: 0; width: 34px;
+  background: linear-gradient(90deg, transparent, var(--paper));
+  pointer-events: none;
+}
+.size-rail {
+  list-style: none; margin: 0;
+  padding: 16px 18px;
+  display: flex; gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.size-rail::-webkit-scrollbar { display: none; }
+.size-rail > li { flex: none; scroll-snap-align: start; }
+
+.size-tile {
+  width: 138px; min-height: 138px;
+  display: grid; gap: 3px; align-content: start;
+  padding: 12px; text-align: left;
+  background: var(--ivory); border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: border-color .18s, background .18s, box-shadow .18s, transform .18s;
+}
+.size-tile:hover { border-color: var(--sage); transform: translateY(-2px); }
+.size-tile:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.size-tile.is-active {
+  background: var(--paper); border-color: var(--forest);
+  box-shadow: inset 0 0 0 1px var(--forest), var(--shadow-soft);
+}
+
+/* Each grade drawn to scale against the tallest one we sell, so the jump from
+   1 ft to 7–8 ft is visible before it is read. */
+.size-gauge {
+  width: 100%; height: 26px; margin-bottom: 4px;
+  display: flex; align-items: flex-end;
+  border-bottom: 2px solid var(--line-strong);
+}
+.size-gauge i {
+  display: block; width: 6px; height: var(--fill, 50%);
+  border-radius: 3px 3px 0 0; background: var(--sage);
+  transition: background .18s, height .25s;
+}
+.size-tile.is-active .size-gauge i { background: var(--forest); }
+
+.size-tile-name { font-size: .96rem; color: var(--forest); line-height: 1.25; }
+.size-tile-meta { font-size: .7rem; color: var(--muted); line-height: 1.4; }
+.size-tile-rate { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.size-tile-rate strong { font-family: var(--font-display); font-size: 1.12rem; color: var(--ink); }
+.size-tile-rate s { font-size: .7rem; color: var(--muted); }
+.size-tile-rate .on-request { font-size: .82rem; color: var(--muted); }
+.size-save {
+  justify-self: start;
+  font-style: normal; font-size: .64rem; font-weight: 800;
+  color: #2F6B3C; background: var(--success-bg);
+  border-radius: var(--radius-pill); padding: 2px 7px;
+}
+
+/* ---- the panel for the selected size ---- */
+.size-panel {
+  padding: 16px 18px;
+  display: grid; gap: 14px;
+  background: var(--ivory);
+}
+.size-panel-title {
+  margin: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.size-panel-title span {
+  font-size: .64rem; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.size-panel-title strong { font-size: .92rem; color: var(--forest); }
+
+.size-specs {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 8px; margin: 0;
+}
+.size-specs > div {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 12px; padding: 10px 12px; display: grid; gap: 3px;
+}
+.size-specs dt {
+  font-size: .64rem; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.size-specs dd { margin: 0; font-size: .85rem; font-weight: 700; color: var(--forest); }
+
+.size-order { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.size-total {
+  margin: 0; font-size: .8rem; color: var(--muted);
+  display: flex; align-items: baseline; gap: 8px;
+}
+.size-total strong { font-family: var(--font-display); font-size: 1.15rem; color: var(--forest); }
+
+.size-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.size-actions .btn { flex: 1 1 150px; }
+.size-panel-hint { margin: 0; font-size: .73rem; color: var(--muted); line-height: 1.6; }
+
+/* Across the full width of the page there is room to put the specs and the
+   buy controls side by side, so the WhatsApp button stays level with the
+   figures it refers to instead of sitting a scroll below them. */
+@media (min-width: 1000px) {
+  .size-rail { padding: 18px 22px; gap: 12px; }
+  .size-tile { width: 152px; min-height: 146px; padding: 14px; }
+  .size-picker-head { padding: 20px 22px 18px; }
+  .size-fineprint { padding: 14px 22px; }
+  .size-panel {
+    padding: 18px 22px;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    grid-template-areas:
+      "title order"
+      "specs actions"
+      "specs hint";
+    column-gap: 26px;
+    align-items: start;
+  }
+  .size-panel-title { grid-area: title; }
+  .size-specs { grid-area: specs; }
+  .size-order { grid-area: order; justify-content: flex-end; }
+  .size-actions { grid-area: actions; }
+  .size-panel-hint { grid-area: hint; }
+}
+.size-fineprint {
+  margin: 0; padding: 13px 18px;
+  font-size: .73rem; color: var(--muted);
+  background: var(--ivory-deep); border-top: 1px solid var(--line);
+}
+
+.detail-subtotal { font-size: .85rem; color: var(--muted); margin: 0 0 14px; }
+.detail-subtotal strong { font-family: var(--font-display); font-size: 1.05rem; color: var(--forest); }
+
 .detail-note { font-size: .8rem; color: var(--muted); margin: 0 0 14px; }
 .related-section { background: var(--ivory-deep); padding-block: var(--section-y); }
 
@@ -986,6 +1248,13 @@ h3 { font-family: var(--font-display); font-weight: 560; line-height: 1.25; }
 .drawer-item-body { flex: 1; display: grid; gap: 5px; min-width: 0; }
 .drawer-item-body strong { font-size: .88rem; color: var(--forest); }
 .drawer-item-body small { font-size: .74rem; color: var(--muted); }
+/* The chosen height, called out separately — it is the difference between a
+   ₹75 Khaya and a ₹585 Khaya and must not be left for the price to imply. */
+.drawer-item-variant {
+  font-size: .72rem; font-weight: 700; color: var(--forest-2);
+  background: var(--sage-soft); border-radius: var(--radius-pill);
+  padding: 2px 8px; justify-self: start;
+}
 .drawer-item .qty-stepper { justify-self: start; }
 .drawer-item .qty-stepper button { width: 30px; height: 30px; }
 .drawer-item .qty-stepper input { width: 40px; }
@@ -1019,6 +1288,37 @@ h3 { font-family: var(--font-display); font-weight: 560; line-height: 1.25; }
 /* ============================================================================
    RESPONSIVE
    ========================================================================= */
+/* One-screen layout on a laptop: the photo is sized off the viewport height
+   rather than the column width, so the picker below it stays above the fold
+   instead of being pushed off by a tall image. */
+@media (min-width: 1100px) and (min-height: 720px) {
+  .detail-page { padding-block: 18px 26px; }
+  /* A fixed track, not `auto`. An auto track stretches to absorb the free space
+     in the row, which is what opened a column of empty ivory between the photo
+     and the copy — the photo stayed its own size and the track grew around it.
+     The width is derived from the height the photo is allowed, so the track and
+     the picture are always exactly the same size and there is nothing to leave
+     a gap. */
+  .detail-grid {
+    grid-template-columns: min(calc(66vh * 4 / 5), 46%) minmax(0, 1fr);
+    gap: clamp(1.75rem, 2.6vw, 2.75rem);
+  }
+  .detail-gallery { max-width: none; }
+  .detail-copy h1 { font-size: clamp(2rem, 3.2vw, 2.9rem); margin: 2px 0 0; }
+  .detail-tamil { margin: 4px 0 2px; }
+  .detail-price { margin: 12px 0 10px; }
+  .detail-points { gap: 8px; margin: 16px 0 12px; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+  .detail-points > div { padding: 9px 11px; border-radius: 12px; }
+  .detail-points dt { font-size: .62rem; }
+  .detail-points dd { font-size: .78rem; }
+  .detail-note { font-size: .72rem; margin-bottom: 8px; }
+  .size-picker { margin-top: 20px; }
+  .size-rail { padding: 14px 20px; }
+  .size-tile { min-height: 132px; }
+  .size-panel { padding: 14px 20px; }
+  .size-fineprint { padding: 10px 20px; font-size: .7rem; }
+}
+
 @media (max-width: 1080px) {
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .footer-col-brand { grid-column: 1 / -1; }
@@ -1330,6 +1630,15 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
   .plant-body { padding: 13px; }
   .plant-body h3 { font-size: 1rem; margin-bottom: 9px; }
   .plant-meta { font-size: .68rem; gap: 4px 10px; padding-bottom: 10px; }
+  .size-picker-head { padding: 15px 14px 13px; }
+  /* The rail runs to both edges on a phone so the last tile is not visually
+     trapped behind the container padding. */
+  .size-rail { padding: 14px; gap: 8px; }
+  .size-tile { width: 124px; min-height: 128px; padding: 11px; }
+  .size-tile-rate strong { font-size: 1.04rem; }
+  .size-panel { padding: 14px; }
+  .size-fineprint { padding: 12px 14px; }
+  .size-actions .btn { flex: 1 1 100%; }
   .plant-footer { padding-top: 10px; flex-direction: column; align-items: flex-start; gap: 8px; }
   .plant-footer strong { font-size: 1.1rem; }
   .plant-footer .small-btn { width: 100%; }
@@ -1350,6 +1659,29 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
     gap: 8px;
   }
   .detail-actions .btn { flex: 1 1 0; min-width: 0; padding-inline: 12px; font-size: .82rem; }
+
+  /* Multi-size plants buy from inside the size panel, so the same sticky
+     treatment belongs there — otherwise the phone loses the buy button that
+     single-size plants keep. Sticky cannot escape an overflow-hidden ancestor,
+     hence the picker releasing its clip on mobile. */
+  .size-picker { overflow: visible; }
+  .size-actions {
+    position: sticky;
+    bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + 8px);
+    z-index: 20;
+    background: rgba(251, 247, 238, .95);
+    backdrop-filter: blur(12px);
+    margin-inline: -14px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--line);
+    gap: 8px;
+  }
+  .size-actions .btn { flex: 1 1 0; min-width: 0; padding-inline: 12px; font-size: .82rem; }
+
+  /* App-style behaviour for the rail: one tile per swipe, and the tiles run to
+     the screen edge so the row reads as scrollable rather than cut off. */
+  .size-rail { scroll-snap-type: x mandatory; scroll-padding-left: 14px; }
+  .size-rail-wrap::after { width: 22px; }
 }
 
 /* Very small phones ------------------------------------------------------- */
@@ -1447,14 +1779,43 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
   background: var(--ivory-deep);
 }
 
-/* ---- left half: video ---- */
+/* ---- left half: video ----
+   The footage was shot on a phone at 402x720. The old rule stretched it across
+   the whole half-panel with object-fit: cover, which meant roughly a 1.8x
+   upscale on a laptop AND a crop that cut the sides off a vertical frame —
+   between them, the entire reason it looked soft.
+
+   It is now shown in a reel-shaped card capped near its native width, centred
+   on the dark panel. Pixels land close to 1:1, nothing is cropped, and the
+   phone-video shape reads as deliberate rather than as a mistake. */
 .cpt-media {
   position: relative;
-  background: #0E1A11;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #1B3222 0%, transparent 70%),
+    #0E1A11;
   overflow: hidden;
   min-height: 560px;
+  display: grid;
+  place-items: center;
+  padding: clamp(28px, 4vw, 52px) 20px;
 }
 .cpt-media video,
+.cpt-video-cover {
+  position: relative;
+  inset: auto;
+  width: min(100%, 402px);
+  aspect-ratio: 402 / 720;
+  height: auto;
+  display: block;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, .5);
+}
+/* contain, not cover: parts of this film are letterboxed landscape inside the
+   vertical frame, and cover would crop those shots to a slot. */
+.cpt-media video { object-fit: contain; }
 .cpt-video-cover img {
   position: absolute;
   inset: 0;
@@ -1463,22 +1824,14 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
   object-fit: cover;
   display: block;
 }
-.cpt-video-cover {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  padding: 0;
-}
 .cpt-video-cover::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(10, 18, 12, .15), rgba(10, 18, 12, .62));
+  background: linear-gradient(180deg, rgba(10, 18, 12, .05), rgba(10, 18, 12, .55));
   transition: background .25s;
 }
-.cpt-video-cover:hover::after { background: linear-gradient(180deg, rgba(10, 18, 12, .08), rgba(10, 18, 12, .48)); }
+.cpt-video-cover:hover::after { background: linear-gradient(180deg, rgba(10, 18, 12, .02), rgba(10, 18, 12, .42)); }
 .cpt-play {
   position: absolute;
   left: 50%; top: 50%;
@@ -1498,12 +1851,20 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
   position: absolute;
   left: 0; right: 0; bottom: 0;
   z-index: 2;
-  padding: 22px clamp(18px, 3vw, 36px);
+  padding: 18px 18px 20px;
   color: #EDF3E9;
-  font-size: .84rem;
+  font-size: .78rem;
   font-weight: 600;
   text-align: left;
-  line-height: 1.4;
+  line-height: 1.45;
+  display: grid;
+  gap: 4px;
+}
+.cpt-video-label strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold-light);
+  font-weight: 600;
 }
 
 /* ---- right half: story ---- */
@@ -1560,7 +1921,10 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
   /* Below this width a 50/50 split leaves both halves too narrow to read, so
      the video stacks above the story. */
   .cpt-section { grid-template-columns: 1fr; }
-  .cpt-media { min-height: 0; aspect-ratio: 4 / 3; }
+  /* No forced aspect ratio when stacked — the reel card sets its own height,
+     so the panel hugs it instead of boxing a vertical video into a 4:3 hole. */
+  .cpt-media { min-height: 0; aspect-ratio: auto; padding: 30px 20px; }
+  .cpt-media video, .cpt-video-cover { width: min(100%, 360px); }
   .cpt-copy-inner { max-width: none; }
 }
 
