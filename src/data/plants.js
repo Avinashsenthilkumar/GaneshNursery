@@ -64,7 +64,14 @@ const rawPlants = [
     light: 'Full sun', water: 'Moderate', soil: 'Deep, well-drained',
     popular: true,
     description: 'African mahogany, and the fastest-growing timber on this list. It puts on height noticeably quicker than teak or rosewood, which makes it the practical choice when you want a shorter rotation without dropping to a low-value species. Grown from 70-year-old CPT mother trees, and stocked in eight grades from an eight-month seedling right up to a 7–8 ft, two-and-a-half-year tree — so you can match the grade to how much establishment work you want to take on yourself.',
-    image: '/plants/khaya-senegalensis.jpg',
+    image: '/plants/khaya-2-5ft.jpg',
+    // The studio shot leads because nothing in it competes with the plant. The
+    // field photos follow in height order — 1 ft to 5-6 ft is the clearest
+    // possible answer to "what does the bigger grade actually look like?".
+    gallery: [
+      '/plants/khaya-2-5ft.jpg', '/plants/khaya-1ft.jpg', '/plants/khaya-2ft.jpg',
+      '/plants/khaya-4ft.jpg', '/plants/khaya-5-6ft.jpg', '/plants/khaya-senegalensis.jpg'
+    ],
     variants: [
       { size: '1 ft', age: '8 months', bag: '3 kg bag', price: 75, mrp: 100 },
       { size: '2–2.5 ft', age: '1 year', bag: '4 kg bag', price: 110, mrp: 165 },
@@ -85,6 +92,7 @@ const rawPlants = [
     popular: true,
     description: 'Red sanders — the highest-value timber we grow, native to the Eastern Ghats and genuinely happy on dry, gravelly ground that will not carry much else. Seed comes from the Kadapa, Chittoor and Thirumala belt, which is the natural range of the species rather than a plantation source. Red sandal is a protected species: felling, transport and sale are regulated, so check the rules in your state before planting at scale. We supply in truck-load quantities for plantation projects.',
     image: '/plants/red-sandal.jpg',
+    gallery: ['/plants/red-sandal.jpg', '/plants/red-sandal-3ft.jpg'],
     variants: [
       { size: '3 ft', age: '1 year', bag: '4 kg bag', price: 150 },
       { size: '4 ft', age: '1.5 years', bag: '4 kg bag', price: 250 },
@@ -101,7 +109,8 @@ const rawPlants = [
     light: 'Full sun', water: 'Low to moderate', soil: 'Well-drained — needs a living host plant',
     popular: true,
     description: 'Marayur-source sandalwood, from the belt that produces the highest oil content in the country. The one thing to understand before you buy: sandalwood is a root parasite and will not survive alone. It needs a compatible host growing alongside it from the start, and host selection is where most sandal plantations quietly fail in year two. Talk to us about it before you plant — the advice costs nothing and it decides the outcome.',
-    image: '/plants/sandalwood.jpg',
+    image: '/plants/sandalwood-2ft.jpg',
+    gallery: ['/plants/sandalwood-2ft.jpg', '/plants/sandalwood-1ft.jpg', '/plants/sandalwood.jpg'],
     variants: [
       { size: '1–1.5 ft', age: '8 months', bag: '1 kg bag', price: 100 },
       { size: '3 ft', age: '1.5–2 years', bag: '7 kg bag', price: 275, mrp: 325 }
@@ -128,11 +137,14 @@ const rawPlants = [
     light: 'Full sun', water: 'Low once established', soil: 'Well-drained',
     popular: true,
     description: 'Ceylon ebony — the true Karungali, not one of the lookalikes sold under the name. Exceptionally dense jet-black heartwood, used for carving, instruments and ritual items, and valued well beyond ordinary timber rates. It is a slow, long-horizon tree by nature: the density that makes it worth growing is exactly what takes decades to build. Plant it as an inheritance, not as a crop.',
-    image: '/plants/karungali.jpg',
-    // Second photo: the same plant growing in the yard rather than staged on
-    // white. The spec shot proves the height; this one shows the leaf and the
-    // habit, which is what someone deciding between lookalikes is looking for.
-    gallery: ['/plants/karungali.jpg', '/plants/karungali-2.jpg'],
+    image: '/plants/karungali-4ft.jpg',
+    // Studio shot first, then the plant in hand and in the yard. Karungali has
+    // several lookalikes sold under the same name, so showing the leaf and the
+    // habit from more than one angle is doing real work here.
+    gallery: [
+      '/plants/karungali-4ft.jpg', '/plants/karungali-2ft.jpg',
+      '/plants/karungali-2.jpg', '/plants/karungali.jpg'
+    ],
     variants: [
       { size: '2 ft', age: '1 year', bag: '5–7 kg bag', price: 300 },
       { size: '4 ft', bag: '5–7 kg bag', price: 700 }
@@ -145,6 +157,7 @@ const rawPlants = [
     light: 'Full sun', water: 'Low once established', soil: 'Well-drained, tolerates poor ground',
     description: 'One of the most expensive timbers traded anywhere in the world, cut almost entirely for clarinets, oboes and fine inlay work. Extremely dense, extremely slow, and almost never available as nursery stock in India — we grow it because a handful of growers are willing to plant on a fifty-year view. Small stock only, in 1–3 ft grades.',
     image: '/plants/african-blackwood.jpg',
+    gallery: ['/plants/african-blackwood.jpg', '/plants/african-blackwood-3ft.jpg'],
     variants: [
       { size: '1 ft', bag: '1 kg bag', price: 250 },
       { size: '2 ft', bag: '1 kg bag', price: 350 },
@@ -158,7 +171,7 @@ const rawPlants = [
     seedSource: 'KFRI (Kerala Forest Research Institute)',
     light: 'Full sun', water: 'Moderate', soil: 'Deep, free-draining, not waterlogged',
     description: 'Nilambur is the teak standard the rest of the world is measured against, and this is KFRI-sourced seed rather than unverified local collection — which matters, because teak from poor seed looks identical in the bag and only shows the difference twenty years later. Two grades, separated by the age of the mother tree the seed came off.',
-    image: null,
+    image: '/plants/nilambur-teak.jpg',
     variants: [
       { size: '1 ft', age: '1 year (stem age 1.5 years)', bag: '4 kg bag', price: 100, note: 'Seed from 70-year-old mother tree' },
       { size: '1.5–2 ft', age: '1 year (stem age 1.5 years)', bag: 'Cocopeat bag', price: 200, note: 'Seed from 80–90-year-old mother tree' }
@@ -170,7 +183,7 @@ const rawPlants = [
     botanical: 'Tectona grandis', category: 'Timber',
     light: 'Full sun', water: 'Moderate', soil: 'Deep, free-draining, not waterlogged',
     description: 'The Burma strain of teak, prized for tight, even grain and high natural oil content — the reason it holds up outdoors and on boat decks better than almost any other timber. Currently stocked as one-year, 1 ft plants in a 4 kg bag.',
-    image: null,
+    image: '/plants/burma-teak.jpg',
     variants: [
       { size: '1 ft', age: '1 year', bag: '4 kg bag', price: 198 }
     ]
@@ -182,7 +195,7 @@ const rawPlants = [
     seedSource: 'Topslip', motherTree: '35-year-old CPT trees',
     light: 'Full sun', water: 'Low once established', soil: 'Well-drained',
     description: 'Indian kino — a strong, hard-wearing furniture timber that is also one of the best-known medicinal trees in Siddha practice, where the heartwood is used for the traditional wooden water tumbler. Seed from Topslip. Supplied large, at 7–8 ft in a 10–12 kg bag, so it goes into the ground already ahead of the weeds.',
-    image: null,
+    image: '/plants/venghai.jpg',
     variants: [
       { size: '7–8 ft', bag: '10–12 kg bag', price: 650 }
     ]
@@ -209,7 +222,9 @@ const rawPlants = [
     light: 'Full sun', water: 'Moderate, ease off at flowering', soil: 'Deep, well-drained',
     popular: true,
     description: 'Four varieties in stock, each true to type. Imam Pasand and Kili Mooku are the eating mangoes people drive out of their way for; Panganapalli is the dependable commercial variety that sells anywhere; Rumani is the soft, sweet home-garden favourite. The three larger varieties go out at 5–6 ft, so they are well past the fragile stage and will usually fruit years ahead of a seedling tree.',
-    image: null,
+    image: '/plants/mango.jpg',
+    // Imam Pasand first, Panganapalli second — same order as the size table.
+    gallery: ['/plants/mango.jpg', '/plants/mango-panganapalli.jpg'],
     variants: [
       { label: 'Imam Pasand', size: '5–6 ft', bag: '15 kg bag', price: 350 },
       { label: 'Panganapalli', size: '5–6 ft', price: 350 },
@@ -290,7 +305,7 @@ const rawPlants = [
     botanical: 'Cocos nucifera', category: 'Fruit',
     light: 'Full sun', water: 'Regular', soil: 'Sandy loam, well-drained',
     description: 'The orange tender-coconut dwarf — short enough to harvest without a climber, which is the whole reason people plant it now. Sweet water, early bearing, and a reliable seller at the gate. Supplied at 1.5 ft in a 10 kg bag.',
-    image: null,
+    image: '/plants/sevvilaneer.jpg',
     variants: [
       { size: '1.5 ft', bag: '10 kg bag', price: 350 }
     ]
@@ -303,7 +318,7 @@ const rawPlants = [
     soil: 'Deep, well-drained, slightly acidic',
     popular: true,
     description: 'A high-value orchard nut with demand in India growing faster than domestic supply. Macadamia wants deep, free-draining soil and shelter from strong wind, and typically begins bearing in its fourth to sixth year. Worth knowing: we supply grafted stock rather than seedlings, because seedling macadamia is slow and unpredictable in nut quality — the saving up front costs you the crop.',
-    image: null,
+    image: '/plants/macadamia.jpg',
     variants: [
       { size: '1 ft', bag: '4 kg bag', price: 600, mrp: 750 }
     ]
