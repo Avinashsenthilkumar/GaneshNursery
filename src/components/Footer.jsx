@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { site, waLink, fullAddress } from '../data/site.js';
+
+import { useContent } from '../context/ContentContext.jsx';
 import { IconWhatsapp, IconPhone, IconMail, IconPin } from './Icons.jsx';
 
 // Social links now come from site.js. If a handle is empty the icon is simply
@@ -10,6 +11,7 @@ const socialLabels = { facebook: 'Facebook', instagram: 'Instagram', youtube: 'Y
 const socialShort = { facebook: 'FB', instagram: 'IG', youtube: 'YT' };
 
 export default function Footer() {
+  const { site, waLink, fullAddress } = useContent();
   const activeSocial = Object.entries(site.social).filter(([, url]) => Boolean(url));
 
   return (

@@ -1,8 +1,9 @@
+import { useContent } from '../context/ContentContext.jsx';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { IconLeaf, IconSearch, IconBasket, IconWhatsapp, IconPin } from './Icons.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
-import { site, waLink } from '../data/site.js';
+
 
 // Mobile-only bottom tab bar. This is the single biggest thing that makes a
 // website feel like an app: thumb-reachable navigation that stays put while
@@ -10,6 +11,7 @@ import { site, waLink } from '../data/site.js';
 // Hidden entirely on desktop, where the top nav is the right pattern.
 export default function BottomNav() {
   const { count, openDrawer } = useEnquiry();
+  const { site, waLink } = useContent();
 
   // The bar stays put on every page. Hiding it on one route (it used to vanish
   // on /contact) is the opposite of how a tab bar behaves in an app — the

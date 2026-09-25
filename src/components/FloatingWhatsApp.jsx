@@ -1,8 +1,10 @@
+import { useContent } from '../context/ContentContext.jsx';
 import React from 'react';
-import { site, waLink } from '../data/site.js';
+
 import { IconWhatsapp } from './Icons.jsx';
 
 export default function FloatingWhatsApp() {
+  const { site, waLink } = useContent();
   return (
     <a
       className="floating-wa"

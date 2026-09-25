@@ -197,3 +197,63 @@ If you replace the video, re-compress it first — a raw phone recording will be
 ffmpeg -i input.mp4 -vf "scale=432:-2,fps=24" -c:v libx264 -preset veryslow \
   -crf 32 -pix_fmt yuv420p -c:a aac -b:a 48k -ac 1 -movflags +faststart output.mp4
 ```
+
+---
+
+## Admin panel
+
+Go to **`/admin`** and enter the passphrase from `.env`
+(`VITE_ADMIN_PASSPHRASE`). Change it from the default before you deploy.
+
+### What you can edit
+
+| Section | Covers |
+|---|---|
+| **Plants** | Add, edit and delete any plant — name, Tamil name, botanical name, category, description, seed source, mother tree, growing conditions, photo, and every size row (height, age, bag weight, price, offer price, note) |
+| **Nursery details** | Business name, tagline, proprietor, founded year, both phone numbers, WhatsApp number, email, opening hours, full address, Maps search, price-validity note |
+| **Appearance** | Light, dark or match-device theme |
+| **Publish** | Export, import and reset your content |
+
+Years of experience is **calculated** from the founded year, so "46+ years"
+never goes stale.
+
+### How publishing works — read this
+
+This is a static site with no server. Edits you make in the panel are saved to
+**localStorage in the browser you made them in**. That means:
+
+- **You** see the changes straight away.
+- **Visitors do not.** Their browsers still have the published version.
+
+To publish: **Publish → Download content file**, drop it in as
+`src/data/content-override.json`, then commit and push. Your host rebuilds and
+everyone sees it. The panel shows an amber banner whenever you have edits that
+have not been published yet, and warns you before closing the tab.
+
+### About the login
+
+The passphrase check runs in the visitor's browser, so the value is inside the
+JavaScript bundle. Anyone who opens developer tools can find it. That is a
+latch, not a lock.
+
+It is acceptable here **because the panel cannot change what the public sees** —
+publishing requires commit access to the repository. Nobody can deface the live
+site through this screen. Still: don't reuse a password from anywhere else.
+
+### Going further — real accounts and live editing
+
+When you want changes to go live without a deploy, and real per-user logins,
+you need a backend. The smallest sensible step from here:
+
+1. Put the catalogue in a hosted database (Supabase and Firebase both have free
+   tiers that suit a site this size).
+2. Use that provider's auth for the login, so passwords are verified on their
+   server, not in the browser.
+3. Change `ContentContext` to read from that database instead of
+   `content-override.json`. Every page already reads through this one file, so
+   nothing else in the site needs to change.
+
+Photos uploaded in the panel are stored inline as data URLs, which keeps the
+export file self-contained but grows it quickly. For anything you intend to
+keep, put the file in `/public/plants/` and type the path instead — the photo
+field accepts either.

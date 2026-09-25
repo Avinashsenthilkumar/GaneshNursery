@@ -1,5 +1,5 @@
 import React from 'react';
-import { site, fullAddress } from '../data/site.js';
+import { useContent } from '../context/ContentContext.jsx';
 import { PageHero } from '../components/PageHero.jsx';
 import Seo from '../components/Seo.jsx';
 import NotFound from './NotFound.jsx';
@@ -17,7 +17,8 @@ import NotFound from './NotFound.jsx';
 // customers will hold you to.
 // ============================================================================
 
-const contactBlock = {
+function buildPolicies(site, fullAddress) {
+  const contactBlock = {
   heading: 'Contact us about this policy',
   paras: [
     `${site.name}, ${fullAddress.join(', ')}.`,
@@ -25,7 +26,7 @@ const contactBlock = {
   ]
 };
 
-const POLICIES = {
+  const POLICIES = {
   'privacy-policy': {
     title: 'Privacy Policy',
     intro: `How ${site.name} handles the information you share with us.`,
@@ -179,7 +180,12 @@ const POLICIES = {
   }
 };
 
+  return POLICIES;
+}
+
 export default function Policy({ slug }) {
+  const { site, fullAddress } = useContent();
+  const POLICIES = buildPolicies(site, fullAddress);
   const policy = POLICIES[slug];
   if (!policy) return <NotFound />;
 

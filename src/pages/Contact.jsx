@@ -1,5 +1,6 @@
+import { useContent } from '../context/ContentContext.jsx';
 import React, { useState } from 'react';
-import { site, waLink, mapsLink, fullAddress } from '../data/site.js';
+
 import { PageHero } from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Seo from '../components/Seo.jsx';
@@ -14,6 +15,7 @@ const SUBJECTS = [
 ];
 
 export default function Contact() {
+  const { site, waLink, mapsLink, fullAddress } = useContent();
   const [status, setStatus] = useState('idle'); // idle | sending | sent | error
   const [errors, setErrors] = useState({});
 

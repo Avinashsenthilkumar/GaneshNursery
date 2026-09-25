@@ -2,6 +2,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
+import { ContentProvider } from './context/ContentContext.jsx';
 import './styles.css';
 
 // Register the service worker so the site is installable and keeps working on
@@ -14,8 +16,12 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ThemeProvider>
+      <ContentProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ContentProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

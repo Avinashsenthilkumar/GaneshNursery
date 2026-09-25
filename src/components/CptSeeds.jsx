@@ -10,14 +10,9 @@ import { IconLeaf } from './Icons.jsx';
 // Laid out as a true full-bleed 50/50 split: video fills the left half edge to
 // edge, story fills the right. No container, no gutters between the halves.
 //
-// The video is deliberately NOT autoplayed and NOT preloaded: it is 17 MB,
+// The video is deliberately NOT autoplayed and NOT preloaded: it is 6.7 MB,
 // and pushing that down a mobile connection before someone has decided they
 // want to watch is the fastest way to lose them. It loads only on play.
-//
-// It is shot vertically at 402x720, so it is presented in a reel-shaped frame
-// at close to its native width rather than stretched across the half-panel.
-// Blowing a 402 px wide source up to a 700 px wide box is what made it look
-// soft — no amount of re-encoding fixes an upscale, only not doing it does.
 export default function CptSeeds() {
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -38,24 +33,23 @@ export default function CptSeeds() {
             controls
             playsInline
             preload="metadata"
-            poster="/media/seed-expedition-poster.jpg"
+            poster="/media/cpt-seeds-story-poster.jpg"
           >
-            <source src="/media/seed-expedition.mp4" type="video/mp4" />
+            <source src="/media/cpt-seeds-story.mp4" type="video/mp4" />
             Your browser cannot play this video.
           </video>
         ) : (
           <button type="button" className="cpt-video-cover" onClick={play}>
-            <img src="/media/seed-expedition-poster.jpg" alt="" loading="lazy" decoding="async" />
+            <img src="/media/cpt-seeds-story-poster.jpg" alt="" loading="lazy" decoding="async" />
             <span className="cpt-play" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
                 <path d="M8 5.5v13l11-6.5-11-6.5Z" />
               </svg>
             </span>
             <span className="cpt-video-label">
-              <strong>விதை தேடிய பயணம்</strong>
-              Watch: the seed expedition to Africa — finding and measuring the mother trees
+              Watch: identifying a Candidate Plus Tree in the field
             </span>
-            <span className="sr-only">Play the video about our seed sourcing expedition</span>
+            <span className="sr-only">Play the video about how we select mother trees</span>
           </button>
         )}
       </div>

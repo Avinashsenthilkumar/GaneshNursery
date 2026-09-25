@@ -34,32 +34,49 @@ export const site = {
   email: 'care@ganeshnursery.co.in', // was @ganeshnursery.com (wrong TLD)
 
   // --- Address (one canonical address, used everywhere + in schema) --------
+  // Corrected against the 2026 price-list letterhead, which is the nursery's
+  // own document: Vellalavidudhi, Gandharvakkottai, PUDUKOTTAI district — not
+  // Thanjavur. Gandharvakkottai sits in Pudukkottai district, so the previous
+  // "Thanjavur" was wrong. See the SEO note below before changing it back.
   address: {
-    line1: 'First Block, Veilailaividu',
-    line2: 'Gandarvakottai Taluk',
-    city: 'Thanjavur',
+    line1: 'Vellalavidudhi',
+    line2: 'Gandharvakkottai',
+    city: 'Pudukottai',
     state: 'Tamil Nadu',
     postalCode: '613301',
     country: 'IN'
   },
   // Replace with the exact lat/long from your Google Business Profile.
   geo: { lat: 10.4413, lng: 79.0261 },
-  mapsQuery: 'Ganesh Nursery Gandarvakottai Thanjavur Tamil Nadu',
+  mapsQuery: 'Ganesh Nursery Vellalavidudhi Gandharvakkottai Pudukottai Tamil Nadu',
 
+  proprietor: 'Selva Ganesh',
   openingHours: 'Mon–Sat, 9:00 am – 6:00 pm',
+
+  // The printed list states prices are valid for 10 days. Shown alongside
+  // pricing so nobody arrives holding you to a stale figure.
+  priceValidityNote: 'Prices are valid for 10 days from the date of the current list.',
 
   // --- Search terms we want to be found for -------------------------------
   // These drive page titles, descriptions and the FAQ block on the homepage.
   // Keep the list short and honest: pages that promise a term and then don't
   // deliver content about it get demoted, not promoted.
+  // NOTE ON SEO: the nursery is physically in Pudukkottai district, but you
+  // asked to rank for Thanjavur, which is roughly 40 km away and a much bigger
+  // search market. Both are kept: the address and schema say Pudukottai (they
+  // must be truthful for Google Business Profile to verify), while Thanjavur
+  // is targeted as a district you serve. Never put Thanjavur in the address.
   keywords: [
     'best nursery in Thanjavur',
     'nursery in Thanjavur',
+    'nursery in Pudukottai',
     'affordable plants in Thanjavur',
     'macadamia nuts in Thanjavur',
     'timber nursery Tamil Nadu',
-    'teak saplings Thanjavur'
+    'sandalwood saplings Tamil Nadu'
   ],
+  // Districts we deliver to — used in copy and schema.
+  areasServed: ['Pudukottai', 'Thanjavur', 'Trichy', 'Tamil Nadu'],
 
   // --- Social (empty value = icon hidden, not linked to a dead "#") --------
   social: {

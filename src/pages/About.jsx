@@ -1,17 +1,18 @@
+import { useContent } from '../context/ContentContext.jsx';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PageHero, ValueCard } from '../components/PageHero.jsx';
 import Testimonials, { hasTestimonials } from '../components/Testimonials.jsx';
 import { testimonials } from '../data/content.js';
-import { site, yearsInBusiness, fullAddress, mapsLink } from '../data/site.js';
+
 import Reveal from '../components/Reveal.jsx';
 import SmartImage from '../components/SmartImage.jsx';
 import AboutGallery from '../components/AboutGallery.jsx';
-import SeedExpedition from '../components/SeedExpedition.jsx';
 import Seo from '../components/Seo.jsx';
 import { IconPin, IconLeaf, IconClock } from '../components/Icons.jsx';
 
 export default function About() {
+  const { site, waLink, fullAddress, mapsLink, yearsInBusiness } = useContent();
   return (
     <main>
       <Seo
@@ -85,8 +86,6 @@ export default function About() {
           <ValueCard icon={<IconClock size={20} />} title="How we work" copy="Honest species advice first, then supply — we would rather turn down a sale than sell you the wrong tree." />
         </Reveal>
       </section>
-
-      <SeedExpedition />
 
       {hasTestimonials(testimonials) && (
         <section className="testimonials-section container" aria-labelledby="about-testimonials">

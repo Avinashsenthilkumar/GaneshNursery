@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { site, waLink, yearsInBusiness } from '../data/site.js';
+
+import { useContent } from '../context/ContentContext.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
 import { IconMenu, IconClose, IconBasket, IconPin, IconLeaf, IconPhone } from './Icons.jsx';
 import { useEnquiry } from '../context/EnquiryContext.jsx';
 import useBackToClose from '../hooks/useBackToClose.js';
@@ -16,6 +18,7 @@ const links = [
 
 export default function Header() {
   const { pathname } = useLocation();
+  const { site, waLink, yearsInBusiness } = useContent();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { count, openDrawer } = useEnquiry();
@@ -93,6 +96,7 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
+          <ThemeToggle />
           <button
             type="button"
             className="cart-btn"

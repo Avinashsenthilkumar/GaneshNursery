@@ -1,14 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { plants } from '../data/plants.js';
+
 import { services, blogs, testimonials } from '../data/content.js';
-import { site, yearsInBusiness, fullAddress } from '../data/site.js';
+
+import { useContent } from '../context/ContentContext.jsx';
 import PlantCard from '../components/PlantCard.jsx';
 import ServiceCard from '../components/ServiceCard.jsx';
 import BlogCard from '../components/BlogCard.jsx';
 import Testimonials, { hasTestimonials } from '../components/Testimonials.jsx';
 import ClientsBanner from '../components/ClientsBanner.jsx';
-import Faq, { faqs } from '../components/Faq.jsx';
+import Faq, { buildFaqs } from '../components/Faq.jsx';
 import CptSeeds from '../components/CptSeeds.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Seo from '../components/Seo.jsx';
@@ -18,7 +19,7 @@ import { IconPin, IconCheck, IconPhone } from '../components/Icons.jsx';
 // Structured data so Google can present the nursery as a local business with
 // address, hours and phone. The old site had none, which is a large part of
 // why it would never surface in a "plant nursery near Thanjavur" map result.
-const localBusinessSchema = {
+const buildLocalBusiness = site => ({
   '@context': 'https://schema.org',
   '@type': 'GardenStore',
   name: site.name,
@@ -37,7 +38,7 @@ const localBusinessSchema = {
     addressCountry: site.address.country
   },
   geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng },
-  areaServed: ['Thanjavur', 'Tamil Nadu', 'IN'],
+  areaServed: site.areasServed || ['Tamil Nadu', 'IN'],
   knowsAbout: site.keywords,
   openingHoursSpecification: [{
     '@type': 'OpeningHoursSpecification',
@@ -51,20 +52,24 @@ const localBusinessSchema = {
     itemListElement: ['Timber saplings', 'Fruit trees', 'Macadamia saplings', 'Native species', 'Indoor plants', 'Flowering plants']
       .map(name => ({ '@type': 'OfferCatalog', name }))
   }
-};
+});
 
 // Emitted as a second block so a search result can show the questions inline.
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map(f => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a }
-  }))
-};
+// Built from the same list the component renders, so edits cannot drift apart.
+function buildFaqSchema(site, years) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: buildFaqs(site, years).map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a }
+    }))
+  };
+}
 
 export default function Home() {
+  const { plants, site, fullAddress, yearsInBusiness } = useContent();
   const featured = [
     ...plants.filter(p => p.popular).slice(0, 3),
     ...plants.filter(p => !p.popular).slice(0, 3)
@@ -73,11 +78,11 @@ export default function Home() {
   return (
     <main>
       <Seo
-        title="Best Nursery in Thanjavur — Timber, Fruit & Macadamia Saplings"
+        title="Best Nursery near Thanjavur — Sandalwood, Teak &amp; Fruit Saplings"
         titleMode="replace"
-        description={`Looking for a nursery in Thanjavur? Ganesh Nursery has supplied timber saplings, fruit trees, macadamia, native and indoor plants since ${site.foundedYear}. Affordable plants in Thanjavur with bulk and institutional rates. Call ${site.phoneDisplay}.`}
-        jsonLd={localBusinessSchema}
-        extraJsonLd={faqSchema}
+        description={`Looking for a nursery near Thanjavur? Ganesh Nursery has raised timber and fruit saplings since ${site.foundedYear} — sandalwood, red sandal, teak, karungali, rosewood, khaya mahogany, mango, guava and coconut, from elite mother trees. Serving Thanjavur, Pudukottai and Trichy. Call ${site.phoneDisplay}.`}
+        jsonLd={buildLocalBusiness(site)}
+        extraJsonLd={buildFaqSchema(site, yearsInBusiness)}
       />
 
       {/* Full-bleed banner hero, matching the layout of the live site: the
@@ -106,8 +111,8 @@ export default function Home() {
             </h1>
             <p>
               Quality nursery plants nurtured with care, experience and sustainable
-              practices — sandalwood, red sandal, karungali, teak, mahogany, mango
-              and guava saplings from {site.address.city}.
+              practices — sandalwood, red sandal, teak, karungali, rosewood, khaya,
+              mango, guava and coconut, raised from elite mother trees.
             </p>
 
             <div className="hero-banner-phones">
@@ -179,7 +184,7 @@ export default function Home() {
             <div>
               <span className="eyebrow">Plant collection</span>
               <h2 id="collection-heading">Pick your next green companion</h2>
-              <p>Timber and fruit — sandalwood, red sandal, karungali, teak, mahogany, mango, guava and more, with every available height priced separately.</p>
+              <p>Timber and fruit saplings, each listed with its real heights, ages, bag weights and prices.</p>
             </div>
             <Link className="btn primary" to="/plants">View all plants</Link>
           </Reveal>

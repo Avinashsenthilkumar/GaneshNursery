@@ -22,6 +22,7 @@ const BlogPost = lazy(() => import('./pages/BlogPost.jsx'));
 const Contact = lazy(() => import('./pages/Contact.jsx'));
 const Policy = lazy(() => import('./pages/Policy.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
+const Admin = lazy(() => import('./pages/Admin.jsx'));
 
 // Remembers how far down each page you were, keyed by URL.
 const scrollPositions = new Map();
@@ -85,12 +86,13 @@ function RouteChangeEffects() {
 }
 
 export default function App() {
+  const isAdmin = useLocation().pathname.startsWith('/admin');
   return (
     <EnquiryProvider>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="app-shell">
         <RouteChangeEffects />
-        <Header />
+        {!isAdmin && <Header />}
         <div id="main-content" tabIndex={-1}>
           <Suspense fallback={
             <div className="route-skeleton" role="status" aria-live="polite" aria-label="Loading">
@@ -116,14 +118,15 @@ export default function App() {
               <Route path="/terms" element={<Policy slug="terms" />} />
               <Route path="/shipping-policy" element={<Policy slug="shipping-policy" />} />
               <Route path="/refund-policy" element={<Policy slug="refund-policy" />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </div>
-        <Footer />
-        <FloatingWhatsApp />
-        <BottomNav />
-        <InstallPrompt />
+        {!isAdmin && <Footer />}
+        {!isAdmin && <FloatingWhatsApp />}
+        {!isAdmin && <BottomNav />}
+        {!isAdmin && <InstallPrompt />}
         <EnquiryDrawer />
         <Toast />
         <div id="route-announcer" className="sr-only" role="status" aria-live="polite" />

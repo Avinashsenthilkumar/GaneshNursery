@@ -65,11 +65,7 @@ export const blogs = [
     title: 'African Blackwood',
     subtitle: 'Features of African Blackwood',
     date: '2026-02-10',
-    // Was a hot-linked Unsplash photograph of a leopard, served from a
-    // third-party CDN on every page load. Now a real cut face of the timber —
-    // which is the whole argument of the article, since blackwood is bought for
-    // the colour and density of that heartwood and nothing else.
-    image: '/blogs/african-blackwood.jpg',
+    image: 'https://images.unsplash.com/photo-1456926631375-92c8ce872def?auto=format&fit=crop&w=1400&q=80',
     excerpt: 'Dalbergia melanoxylon is an important timber species used for fine furniture, musical instruments, sculptures and specialty woodwork, valued for its dense, durable timber and slow-growing nature.',
     body: [
       'Dalbergia melanoxylon, known in the trade as African Blackwood, produces one of the densest and most durable timbers available anywhere. Its heartwood is close to black, takes a fine polish, and machines cleanly enough to be the standard choice for clarinets, oboes and bagpipe chanters.',
@@ -84,10 +80,7 @@ export const blogs = [
     title: 'கருங்காலி மரத்தின் முக்கியத்துவம்',
     subtitle: 'நீடித்த பசுமைக்கான மரத் தேர்வு',
     date: '2026-01-22',
-    // Was a hot-linked stock photo of ferns. Now the cut face of real karungali:
-    // the jet-black heartwood ringed by pale sapwood, which is what buyers are
-    // actually paying for and what a photograph of foliage can never show.
-    image: '/blogs/karungali.jpg',
+    image: 'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1400&q=80',
     excerpt: 'கருங்காலி போன்ற விலைமதிப்புள்ள மர வகைகள், நீண்டகால நிழல், சுற்றுச்சூழல் பாதுகாப்பு மற்றும் எதிர்கால பொருளாதார மதிப்பை உருவாக்க உதவுகின்றன.',
     body: [
       'கருங்காலி போன்ற விலைமதிப்புள்ள மர வகைகள், நீண்டகால நிழல், சுற்றுச்சூழல் பாதுகாப்பு மற்றும் எதிர்கால பொருளாதார மதிப்பை உருவாக்க உதவுகின்றன.',

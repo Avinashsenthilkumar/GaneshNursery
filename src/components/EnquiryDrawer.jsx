@@ -79,32 +79,28 @@ export default function EnquiryDrawer() {
           <>
             <ul className="drawer-list">
               {items.map(i => (
-                <li className="drawer-item" key={i.uid}>
+                <li className="drawer-item" key={i.id}>
                   <SmartImage src={i.image} alt="" ratio="1 / 1" className="drawer-item-img" />
                   <div className="drawer-item-body">
                     <strong>{i.name}</strong>
-                    {/* The size is the difference between a Khaya at ₹75 and
-                        the same Khaya at ₹585, so it is shown on its own line
-                        rather than being left to the price to imply. */}
-                    {i.variantLabel && <span className="drawer-item-variant">{i.variantLabel}</span>}
-                    <small>{i.price ? `₹${i.price.toLocaleString('en-IN')} each` : 'Price on request'}</small>
+                    <small>{i.price ? `from ₹${i.price.toLocaleString('en-IN')} each` : 'Price on request'}</small>
                     <div className="qty-stepper">
-                      <button type="button" onClick={() => setQty(i.uid, i.qty - 1)} aria-label={`Decrease ${i.name} quantity`}>
+                      <button type="button" onClick={() => setQty(i.id, i.qty - 1)} aria-label={`Decrease ${i.name} quantity`}>
                         <IconMinus size={13} />
                       </button>
                       <input
                         type="number"
                         min="1"
                         value={i.qty}
-                        onChange={e => setQty(i.uid, Number(e.target.value))}
+                        onChange={e => setQty(i.id, Number(e.target.value))}
                         aria-label={`${i.name} quantity`}
                       />
-                      <button type="button" onClick={() => setQty(i.uid, i.qty + 1)} aria-label={`Increase ${i.name} quantity`}>
+                      <button type="button" onClick={() => setQty(i.id, i.qty + 1)} aria-label={`Increase ${i.name} quantity`}>
                         <IconPlus size={13} />
                       </button>
                     </div>
                   </div>
-                  <button type="button" className="drawer-remove" onClick={() => removeItem(i.uid)} aria-label={`Remove ${i.name}`}>
+                  <button type="button" className="drawer-remove" onClick={() => removeItem(i.id)} aria-label={`Remove ${i.name}`}>
                     <IconClose size={15} />
                   </button>
                 </li>
@@ -123,7 +119,7 @@ export default function EnquiryDrawer() {
             </label>
 
             <div className="drawer-total">
-              <span>Estimated total</span>
+              <span>Estimated starting total</span>
               <strong>₹{estimatedTotal.toLocaleString('en-IN')}</strong>
             </div>
             <p className="drawer-fineprint">
