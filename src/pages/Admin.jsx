@@ -4,8 +4,10 @@ import Seo from '../components/Seo.jsx';
 import { useContent } from '../context/ContentContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import {
-  IconClose, IconPlus, IconMinus, IconCheck, IconLeaf, IconSearch
+  IconClose, IconPlus, IconCheck, IconLeaf, IconSearch,
+  IconChevronLeft, IconBasket, IconPin, IconSun
 } from '../components/Icons.jsx';
+import useBackToClose from '../hooks/useBackToClose.js';
 
 // ============================================================================
 // ADMIN PANEL
@@ -205,18 +207,23 @@ function SiteSettings() {
 
 /* ─────────────────────────── plant editor ─────────────────────────── */
 
-function VariantRow({ v, onChange, onRemove, canRemove }) {
+function VariantRow({ v, index, onChange, onRemove, canRemove }) {
   return (
     <div className="admin-variant">
+      <div className="admin-variant-head">
+        <span>Size {index + 1}</span>
+        <button type="button" className="admin-variant-del" onClick={onRemove} disabled={!canRemove} aria-label={`Remove size ${index + 1}`}>
+          <IconClose size={15} />
+        </button>
+      </div>
+      <div className="admin-variant-fields">
       <label>Height<input value={v.size} onChange={e => onChange({ ...v, size: e.target.value })} placeholder="5 ft" /></label>
       <label>Age<input value={v.age || ''} onChange={e => onChange({ ...v, age: e.target.value })} placeholder="1.5 years" /></label>
       <label>Bag<input value={v.bag || ''} onChange={e => onChange({ ...v, bag: e.target.value })} placeholder="4 kg" /></label>
       <label>Price ₹<input type="number" min="0" value={v.cost} onChange={e => onChange({ ...v, cost: Number(e.target.value) || 0 })} /></label>
       <label>Offer ₹<input type="number" min="0" value={v.offer ?? ''} onChange={e => onChange({ ...v, offer: e.target.value === '' ? null : Number(e.target.value) })} placeholder="—" /></label>
       <label>Note<input value={v.note || ''} onChange={e => onChange({ ...v, note: e.target.value })} placeholder="Strong stem" /></label>
-      <button type="button" className="admin-variant-del" onClick={onRemove} disabled={!canRemove} aria-label="Remove this size">
-        <IconClose size={15} />
-      </button>
+      </div>
     </div>
   );
 }
@@ -257,8 +264,11 @@ function PlantEditor({ plant, onSave, onCancel, onDelete }) {
     reader.readAsDataURL(file);
   };
 
+  const valid = form.name.trim() && form.variants.some(v => v.cost > 0);
+
   const submit = e => {
     e.preventDefault();
+    if (!valid) return;
     const slug = form.slug?.trim() ? slugify(form.slug) : slugify(form.name);
     onSave({
       ...form,
@@ -268,14 +278,21 @@ function PlantEditor({ plant, onSave, onCancel, onDelete }) {
     });
   };
 
-  const valid = form.name.trim() && form.variants.some(v => v.cost > 0);
-
   return (
     <form className="admin-form admin-editor" onSubmit={submit}>
-      <div className="admin-editor-head">
-        <h2>{plant.name ? `Edit ${plant.name}` : 'New plant'}</h2>
-        <button type="button" className="icon-btn" onClick={onCancel} aria-label="Close editor"><IconClose size={18} /></button>
+      {/* On a phone the editor takes the whole screen with its own bar, the
+          way a native app pushes a detail view — a form squeezed under the
+          site header with the save button miles below the fold is the single
+          most website-ish thing an admin panel can do. */}
+      <div className="admin-editor-bar">
+        <button type="button" className="admin-back" onClick={onCancel} aria-label="Back to the plant list">
+          <IconChevronLeft size={20} />
+        </button>
+        <span className="admin-editor-title">{plant.name || 'New plant'}</span>
+        <button type="button" className="admin-bar-save" onClick={submit} disabled={!valid}>Save</button>
       </div>
+
+      <div className="admin-editor-body">
 
       <div className="admin-grid">
         <label>Name *<input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Nilambur Teak" /></label>
@@ -319,6 +336,7 @@ function PlantEditor({ plant, onSave, onCancel, onDelete }) {
           <VariantRow
             key={i}
             v={v}
+            index={i}
             onChange={next => setVariant(i, next)}
             onRemove={() => removeVariant(i)}
             canRemove={form.variants.length > 1}
@@ -349,14 +367,18 @@ function PlantEditor({ plant, onSave, onCancel, onDelete }) {
         </div>
       </div>
 
-      <div className="admin-actions">
-        <button className="btn primary" type="submit" disabled={!valid}>Save plant</button>
-        <button className="btn ghost" type="button" onClick={onCancel}>Cancel</button>
         {onDelete && (
-          <button type="button" className="admin-delete" onClick={onDelete}>Delete this plant</button>
+          <div className="admin-danger-zone">
+            <button type="button" className="admin-delete" onClick={onDelete}>Delete this plant</button>
+          </div>
         )}
+        {!valid && <p className="admin-hint">A name and at least one size with a price are needed before saving.</p>}
       </div>
-      {!valid && <p className="admin-hint">A name and at least one size with a price are needed before saving.</p>}
+
+      <div className="admin-sticky-actions">
+        <button className="btn ghost" type="button" onClick={onCancel}>Cancel</button>
+        <button className="btn primary" type="submit" disabled={!valid}>Save plant</button>
+      </div>
     </form>
   );
 }
@@ -365,6 +387,10 @@ function PlantsAdmin() {
   const { plants, upsertPlant, deletePlant } = useContent();
   const [editing, setEditing] = useState(null);
   const [query, setQuery] = useState('');
+
+  // Android Back closes the editor and returns to the list, rather than
+  // dropping you out of the admin panel altogether.
+  useBackToClose(!!editing, () => setEditing(null));
 
   const nextId = useMemo(
     () => Math.max(0, ...plants.map(p => Number(String(p.id).split('-')[0]) || 0)) + 1,
@@ -551,10 +577,17 @@ function Appearance() {
 
 const TABS = [
   ['plants', 'Plants'],
-  ['site', 'Nursery details'],
-  ['appearance', 'Appearance'],
+  ['site', 'Details'],
+  ['appearance', 'Theme'],
   ['publish', 'Publish']
 ];
+
+const TAB_ICONS = {
+  plants: IconLeaf,
+  site: IconPin,
+  appearance: IconSun,
+  publish: IconBasket
+};
 
 export default function Admin() {
   const [unlocked, setUnlocked] = useState(() => {
@@ -616,6 +649,29 @@ export default function Admin() {
             {id === 'publish' && hasLocalEdits && <span className="admin-dot" aria-label="unpublished changes" />}
           </button>
         ))}
+      </nav>
+
+      {/* Phone-only tab bar. Same sections, but under the thumb instead of at
+          the top of a long scrolling page. */}
+      <nav className="admin-bottom-nav" aria-label="Admin sections">
+        {TABS.map(([id, label]) => {
+          const Icon = TAB_ICONS[id];
+          return (
+            <button
+              key={id}
+              type="button"
+              className={tab === id ? 'admin-bnav-item is-active' : 'admin-bnav-item'}
+              onClick={() => setTab(id)}
+              aria-current={tab === id}
+            >
+              <span className="admin-bnav-icon">
+                <Icon size={20} />
+                {id === 'publish' && hasLocalEdits && <span className="admin-bnav-dot" />}
+              </span>
+              <span>{label}</span>
+            </button>
+          );
+        })}
       </nav>
 
       <div className="container admin-body">

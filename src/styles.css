@@ -2136,18 +2136,30 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
 /* ---- variants ---- */
 .admin-variants { display: grid; gap: 10px; }
 .admin-variant {
-  display: grid;
-  grid-template-columns: 1.1fr 1.1fr .9fr .8fr .8fr 1.1fr auto;
-  gap: 8px; align-items: end;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--ivory);
 }
+.admin-variant-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px;
+}
+.admin-variant-head span {
+  font-size: .68rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted);
+}
+/* Auto-fit rather than a fixed seven-column grid: six inputs simply do not
+   fit across a 360px screen, and the old rule forced a sideways scroll. */
+.admin-variant-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
 .admin-variant label { font-size: .68rem; }
 .admin-variant input { min-height: 42px; padding: 9px 10px; font-size: .86rem; }
 .admin-variant-del {
-  width: 40px; height: 42px; border-radius: 9px;
+  width: 36px; height: 36px; border-radius: 9px; flex: none;
   display: grid; place-items: center; color: var(--muted);
 }
 .admin-variant-del:hover:not(:disabled) { color: var(--danger); background: var(--ivory-deep); }
@@ -2229,14 +2241,189 @@ button, .btn, .chip, .small-btn, .bottom-nav, .nav, .top-strip, .plant-tag,
   margin: 18px 0 14px; padding-top: 16px; border-top: 1px solid var(--line);
 }
 
-@media (max-width: 760px) {
-  .admin-variant { grid-template-columns: 1fr 1fr; }
-  .admin-variant-del { grid-column: 1 / -1; width: 100%; }
-  .admin-photo { grid-template-columns: 1fr; }
-  .admin-photo-preview { max-width: 200px; }
-  .admin-form { border-radius: 16px; }
-}
+
 
 /* Editing one plant is a focused task — give it a touch more room than the
    list view it replaces. */
 .admin-editor { max-width: 980px; }
+
+/* ============================================================================
+   ADMIN ON MOBILE
+   The panel is a working tool used one-handed in a nursery, often outdoors.
+   On a phone it becomes a full-screen app: thumb-reachable tabs at the bottom,
+   the editor as its own screen with a sticky save bar, and fields that stack
+   instead of scrolling sideways.
+   ========================================================================= */
+.admin-bottom-nav { display: none; }
+.admin-editor-bar { display: none; }
+.admin-sticky-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.admin-sticky-actions .btn { flex: 0 0 auto; }
+.admin-danger-zone { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+@media (max-width: 860px) {
+  /* ---- shell ---- */
+  .admin {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  }
+  .admin-head { padding-block: 14px; padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+  .admin-head-inner { align-items: center; }
+  .admin-head h1 { font-size: 1.25rem; }
+  .admin-head .eyebrow { font-size: .62rem; }
+
+  /* Top tabs give way to the bottom bar. */
+  .admin-tabs { display: none; }
+  .admin-body { padding-top: 16px; }
+
+  .admin-bottom-nav {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: rgba(251, 247, 238, .97);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  :root[data-theme="dark"] .admin-bottom-nav { background: rgba(16, 26, 19, .97); }
+
+  .admin-bnav-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px;
+    min-height: 62px;
+    padding: 8px 2px;
+    font-size: .62rem; font-weight: 700;
+    color: var(--muted);
+    transition: color .18s;
+  }
+  .admin-bnav-item.is-active { color: var(--forest); }
+  .admin-bnav-item.is-active .admin-bnav-icon svg { transform: translateY(-1px) scale(1.08); }
+  .admin-bnav-icon { position: relative; display: grid; place-items: center; }
+  .admin-bnav-icon svg { transition: transform .18s; }
+  .admin-bnav-dot {
+    position: absolute; top: -3px; right: -6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--ivory);
+  }
+  :root[data-theme="dark"] .admin-bnav-dot { border-color: var(--ivory); }
+
+  /* ---- forms ---- */
+  .admin-form {
+    border: 0;
+    border-radius: 0;
+    padding: 0 0 18px;
+    background: transparent;
+  }
+  .admin-grid { grid-template-columns: 1fr; gap: 12px; }
+  /* 16px stops iOS zooming the page when a field is focused. */
+  .admin-form input,
+  .admin-form select,
+  .admin-form textarea { font-size: 16px; min-height: 48px; }
+  .admin-search { max-width: none; }
+
+  /* ---- plant list ---- */
+  .admin-editor-head { gap: 10px; }
+  .admin-editor-head .btn { flex: 1 1 100%; }
+  .admin-row { padding: 12px; border-radius: 14px; }
+  .admin-row-img { width: 52px; height: 52px; }
+  .admin-row:active { transform: scale(.985); transition: transform .06s; }
+
+  /* ---- editor as its own screen ---- */
+  .admin-editor {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: var(--ivory);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    animation: adminPush .26s cubic-bezier(.2, .8, .2, 1);
+  }
+  @keyframes adminPush { from { transform: translateX(22px); opacity: .4; } to { transform: none; opacity: 1; } }
+
+  .admin-editor-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    flex: none;
+  }
+  .admin-back {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; color: var(--forest); flex: none;
+  }
+  .admin-back:active { background: var(--ivory-deep); }
+  .admin-editor-title {
+    flex: 1; min-width: 0;
+    font-family: var(--font-display); font-size: 1.02rem; font-weight: 600;
+    color: var(--forest);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .admin-bar-save {
+    min-height: 40px; padding: 0 16px; border-radius: 999px; flex: none;
+    background: var(--forest); color: var(--ivory);
+    font-size: .82rem; font-weight: 800;
+  }
+  :root[data-theme="dark"] .admin-bar-save { background: var(--sage); color: #0E1A11; }
+  .admin-bar-save:disabled { opacity: .4; }
+
+  .admin-editor-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 16px 14px 20px;
+  }
+  /* The editor header inside the body is redundant once the bar shows it. */
+  .admin-editor .admin-editor-head { display: none; }
+
+  .admin-sticky-actions {
+    flex: none;
+    margin: 0;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    gap: 8px;
+  }
+  .admin-sticky-actions .btn { flex: 1 1 0; min-height: 50px; }
+
+  /* ---- variants, photo, themes ---- */
+  .admin-variant-fields { grid-template-columns: 1fr 1fr; }
+  .admin-variant-fields label:nth-child(6) { grid-column: 1 / -1; }
+  .admin-photo { grid-template-columns: 1fr; }
+  .admin-photo-preview { max-width: 180px; }
+  .admin-themes { grid-template-columns: 1fr; }
+
+  /* ---- login ---- */
+  .admin-login { padding: 20px; align-items: start; padding-top: max(8vh, 60px); }
+  .admin-login-card input { font-size: 16px; }
+}
+
+@media (max-width: 380px) {
+  .admin-bnav-item { font-size: .58rem; }
+  .admin-variant-fields { grid-template-columns: 1fr; }
+}
+
+/* Long code paths in the publish instructions must wrap, not force the page
+   sideways. Same for the raw file inputs. */
+.admin-hint code { word-break: break-all; }
+.admin-form input[type="file"] { max-width: 100%; }
+
+@media (max-width: 860px) {
+  .admin-form input[type="file"] {
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+    padding: 14px 12px;
+    background: var(--ivory);
+    width: 100%;
+  }
+  .admin-banner { font-size: .8rem; }
+  .admin-actions { flex-direction: column; align-items: stretch; }
+  .admin-actions .btn { width: 100%; }
+  .admin-actions .admin-saved { justify-content: center; padding-top: 4px; }
+  .admin-row-price { font-size: .95rem; }
+  .admin-count { display: inline-block; }
+}
