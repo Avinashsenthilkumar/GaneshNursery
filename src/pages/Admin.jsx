@@ -20,14 +20,14 @@ import useBackToClose from '../hooks/useBackToClose.js';
 //
 // WHAT CHANGED, AND WHY IT MATTERS
 //
-//   Login    Real accounts, checked by Supabase on their servers. The old
-//            passphrase was compared inside the downloaded bundle, so anyone
-//            could read it. That was tolerable only because the panel could
-//            not change what the public saw. Now it can, so the lock is real.
+//   Login    Checked on the server. The old passphrase was compared inside
+//            the downloaded bundle, so anyone could read it. That was
+//            tolerable only because the panel could not change what the public
+//            saw. Now it can, so the lock had to become real.
 //
-//   Saving   Writes go to Postgres, and row-level security rejects them unless
-//            a valid session is attached. Getting past this screen is not
-//            enough on its own — the database checks again.
+//   Saving   Writes go through /api to Postgres, and the server re-checks the
+//            session on every one. Getting past this screen is not enough on
+//            its own.
 //
 //   Photos   Resized here, uploaded to Cloudinary, referenced by URL. This is
 //            the fix for "I added a photo on my phone and it wasn't on the
@@ -190,38 +190,24 @@ const slugify = s => s.toLowerCase().trim()
 /* ─────────────────────────── login ─────────────────────────── */
 
 function Login() {
-  const { signIn, sendReset, configured } = useAuth();
-  const [email, setEmail] = useState('');
+  const { signIn, unavailable } = useAuth();
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [note, setNote] = useState('');
 
   const submit = async e => {
     e.preventDefault();
-    if (busy) return;
+    if (busy || !password) return;
     setBusy(true);
     setError('');
-    setNote('');
     try {
-      await signIn(email, password);
+      await signIn(password);
       // Nothing to do on success: the session change re-renders the panel.
     } catch (err) {
       setError(err.message);
       setPassword('');
     } finally {
       setBusy(false);
-    }
-  };
-
-  const reset = async () => {
-    if (!email.trim()) { setError('Type your email address first.'); return; }
-    setError('');
-    try {
-      await sendReset(email);
-      setNote('Check that inbox for a reset link.');
-    } catch (err) {
-      setError(err.message);
     }
   };
 
@@ -232,28 +218,9 @@ function Login() {
         <h1>Nursery admin</h1>
         <p>Sign in to edit the live site.</p>
 
-        {!configured && (
-          <div className="admin-banner warn">
-            The database is not connected, so there is nothing to sign in to.
-            Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>,
-            then reload. See <code>supabase/SETUP.md</code>.
-          </div>
+        {unavailable && (
+          <div className="admin-banner warn">{unavailable}</div>
         )}
-
-        <label htmlFor="admin-email">
-          Email
-          <input
-            id="admin-email"
-            type="email"
-            inputMode="email"
-            autoComplete="username"
-            autoCapitalize="off"
-            spellCheck="false"
-            value={email}
-            onChange={e => { setEmail(e.target.value); setError(''); }}
-            disabled={!configured}
-          />
-        </label>
 
         <label htmlFor="admin-pass">
           Password
@@ -265,25 +232,19 @@ function Login() {
             onChange={e => { setPassword(e.target.value); setError(''); }}
             aria-invalid={!!error}
             aria-describedby={error ? 'admin-pass-err' : undefined}
-            disabled={!configured}
           />
           {error && <span className="field-error" id="admin-pass-err">{error}</span>}
         </label>
 
-        <button className="btn primary" type="submit" disabled={busy || !configured || !email.trim() || !password}>
+        <button className="btn primary" type="submit" disabled={busy || !password}>
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
 
-        {note && <div className="form-note success">{note}</div>}
-
-        <button type="button" className="admin-link-btn" onClick={reset} disabled={!configured}>
-          Forgot the password?
-        </button>
-
         <p className="admin-login-note">
-          Your password is checked by the database, never by this page, and it
-          is what allows anything to be saved. Anyone signed in here can change
-          what the public sees, so keep it to yourself.
+          Your password is checked on the server and never travels back to this
+          page. Anyone who has it can change what the public sees, so keep it to
+          yourself. To change it, edit <code>ADMIN_PASSWORD</code> in your
+          hosting settings and redeploy — that signs everyone out too.
         </p>
         <Link className="text-link" to="/">Back to the site<span aria-hidden="true"> →</span></Link>
       </form>
@@ -778,7 +739,6 @@ function PlantsAdmin() {
    answer to "is this thing actually connected, and where did my photo go?" */
 function Database() {
   const { plants, source, lastError, refresh } = useContent();
-  const { email } = useAuth();
   const [busy, setBusy] = useState(false);
 
   const stats = useMemo(() => {
@@ -801,8 +761,7 @@ function Database() {
   const status = {
     live: ['ok', 'Connected. Every save here is on the live site immediately.'],
     loading: ['', 'Connecting…'],
-    offline: ['warn', 'The database could not be reached. Visitors are seeing the catalogue the site shipped with, and saves will fail until it is back.'],
-    static: ['warn', 'No database configured. The site is running from the files it shipped with and nothing can be saved. See supabase/SETUP.md.']
+    offline: ['warn', 'The database could not be reached. Visitors are seeing the catalogue the site shipped with, and saves will fail until it is back.']
   }[source] || ['', ''];
 
   return (
@@ -858,22 +817,21 @@ function Database() {
 
       <h3>Backups</h3>
       <p className="admin-hint">
-        Supabase keeps daily backups on its paid plans; on the free plan take
-        your own now and then from Dashboard → Database → Backups. Cloudinary
-        holds the photos separately and neither backup covers the other, so
+        Neon keeps a rolling history of the database and can restore it to any
+        moment in the last few days — Neon dashboard → Branches → Restore.
+        Cloudinary holds the photos separately and neither covers the other, so
         keep the original shots on your phone or a hard disk as well.
       </p>
 
-      {email && (
-        <>
-          <h3>Signed in as</h3>
-          <p className="admin-hint">
-            <strong>{email}</strong>. To add another person, create them in
-            Supabase → Authentication → Users. Do not share one account — if
-            someone leaves, you want to be able to remove just their access.
-          </p>
-        </>
-      )}
+      <h3>The password</h3>
+      <p className="admin-hint">
+        One password opens this panel, and it lives in your hosting settings
+        rather than in the site. To change it: Vercel → Settings → Environment
+        Variables → <code>ADMIN_PASSWORD</code> → redeploy. Everyone signed in
+        anywhere is signed out at the same time, which is what you want if it
+        has been shared with someone who no longer needs it.
+      </p>
+
     </div>
   );
 }

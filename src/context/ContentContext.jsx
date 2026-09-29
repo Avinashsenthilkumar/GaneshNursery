@@ -1,31 +1,30 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { plants as defaultPlants, categories as defaultCategories, MAX_IMAGES } from '../data/plants.js';
 import { site as defaultSite } from '../data/site.js';
-import { supabase, isSupabaseConfigured, rowToPlant, plantToRow } from '../lib/supabase.js';
+import { fetchPlants, fetchSite, savePlant, removePlant, saveSiteSettings } from '../lib/api.js';
 
 // ============================================================================
 // CONTENT STORE
 //
 // Every page reads its plants and business details through this one file, so
 // it is the only place that needs to know where the content actually comes
-// from.
+// from. That has now changed twice without a single component being touched,
+// which is the point of the arrangement.
 //
 // HOW IT LOADS
 //
 // 1. It starts with the data compiled into the bundle (src/data/*.js). The
 //    first paint therefore has real content — no spinner, no layout shift,
-//    and the site still works with JavaScript-only rendering.
-// 2. If Supabase is configured it then fetches the live rows and swaps them
-//    in. Usually within a few hundred milliseconds.
-// 3. If that fetch fails — no network, project paused, key rotated — the
-//    static data simply stays. The visitor sees a slightly stale catalogue
-//    rather than a broken page. This matters: a nursery site that goes blank
-//    because a database hiccuped is worse than one showing last week's prices.
+//    and the catalogue is on screen before any request has finished.
+// 2. It then fetches the live rows from /api and swaps them in, usually within
+//    a few hundred milliseconds.
+// 3. If that fetch fails — database asleep, network out, functions not
+//    deployed — the static data simply stays. The visitor sees a slightly
+//    stale catalogue rather than a broken page.
 //
-// WITHOUT SUPABASE CONFIGURED
-//
-// Everything still runs off the static files, exactly as before. That keeps
-// local development and preview builds working with no credentials.
+// Step 3 is deliberate and worth defending: a nursery site that goes blank
+// because a database hiccuped is considerably worse than one showing last
+// week's prices.
 // ============================================================================
 
 const ContentContext = createContext(null);
@@ -72,31 +71,27 @@ export function ContentProvider({ children }) {
   const [plants, setPlants] = useState(SEED_PLANTS);
   const [siteData, setSiteData] = useState(defaultSite);
 
-  // 'static'  — running from the bundled files (Supabase not configured)
-  // 'loading' — configured, first fetch in flight
+  // 'loading' — first fetch in flight, bundled data on screen
   // 'live'    — reading from the database
-  // 'offline' — configured but unreachable; showing bundled data instead
-  const [source, setSource] = useState(isSupabaseConfigured ? 'loading' : 'static');
+  // 'offline' — the fetch failed; showing bundled data instead
+  const [source, setSource] = useState('loading');
   const [lastError, setLastError] = useState('');
 
-  const refresh = useCallback(async () => {
-    if (!isSupabaseConfigured) return;
+  const refresh = useCallback(async signal => {
     try {
       const [plantRes, siteRes] = await Promise.all([
-        supabase.from('plants').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true }),
-        supabase.from('site_settings').select('data').eq('id', 1).maybeSingle()
+        fetchPlants(signal),
+        fetchSite(signal).catch(() => null)   // settings are optional; plants are not
       ]);
 
-      if (plantRes.error) throw plantRes.error;
-
-      // An empty table means the seed script has not been run. Keep showing
-      // the bundled catalogue rather than an empty shop.
-      if (Array.isArray(plantRes.data) && plantRes.data.length > 0) {
-        setPlants(plantRes.data.map(row => derive(rowToPlant(row))));
+      // An empty table means db:init has not been run. Keep showing the
+      // bundled catalogue rather than an empty shop.
+      if (Array.isArray(plantRes.plants) && plantRes.plants.length > 0) {
+        setPlants(plantRes.plants.map(derive));
       }
 
-      if (!siteRes.error && siteRes.data?.data && Object.keys(siteRes.data.data).length) {
-        const remote = siteRes.data.data;
+      const remote = siteRes?.site;
+      if (remote && Object.keys(remote).length) {
         setSiteData({
           ...defaultSite,
           ...remote,
@@ -110,65 +105,46 @@ export function ContentProvider({ children }) {
       setSource('live');
       setLastError('');
     } catch (err) {
+      if (err.name === 'AbortError') return;
       // Deliberately non-fatal. The bundled data is already on screen.
       setSource('offline');
-      setLastError(err?.message || 'Could not reach the database.');
+      setLastError(err.message || 'Could not reach the database.');
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    const ac = new AbortController();
+    refresh(ac.signal);
+    return () => ac.abort();
+  }, [refresh]);
 
   // ─── writes ──────────────────────────────────────────────────────────────
-  // These are only reachable from the admin panel, and row-level security
-  // rejects them unless a real session is attached.
-
-  const requireDb = () => {
-    if (!isSupabaseConfigured) {
-      throw new Error('The database is not connected. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then reload.');
-    }
-  };
+  // Only reachable from the admin panel, and the server rejects them unless a
+  // valid session cookie is attached. The check here is for the interface's
+  // benefit; the one that matters is the one in api/_lib/auth.js.
 
   const saveSite = useCallback(async patch => {
-    requireDb();
     const next = { ...siteData, ...patch };
     const { contactEndpoint, ...storable } = next;
-    const { error } = await supabase
-      .from('site_settings')
-      .upsert({ id: 1, data: storable }, { onConflict: 'id' });
-    if (error) throw error;
+    await saveSiteSettings(storable);
     setSiteData(next);
   }, [siteData]);
 
   const upsertPlant = useCallback(async plant => {
-    requireDb();
-    const row = plantToRow(plant);
-    // New plants have a temporary client-side id; let Postgres assign the real
-    // one rather than fighting the identity sequence.
-    const isNew = !plants.some(p => String(p.id) === String(plant.id));
-    if (isNew) delete row.id;
-
-    const { data, error } = await supabase
-      .from('plants')
-      .upsert(row, { onConflict: 'slug' })
-      .select()
-      .single();
-    if (error) throw error;
-
-    const saved = derive(rowToPlant(data));
+    const { plant: saved } = await savePlant(plant);
+    const derived = derive(saved);
     setPlants(prev => {
-      const i = prev.findIndex(p => p.slug === saved.slug);
-      if (i === -1) return [...prev, saved];
+      const i = prev.findIndex(p => p.slug === derived.slug);
+      if (i === -1) return [...prev, derived];
       const next = [...prev];
-      next[i] = saved;
+      next[i] = derived;
       return next;
     });
-    return saved;
-  }, [plants]);
+    return derived;
+  }, []);
 
   const deletePlant = useCallback(async id => {
-    requireDb();
-    const { error } = await supabase.from('plants').delete().eq('id', id);
-    if (error) throw error;
+    await removePlant(id);
     setPlants(prev => prev.filter(p => String(p.id) !== String(id)));
   }, []);
 
@@ -208,7 +184,7 @@ export function ContentProvider({ children }) {
     source,
     isLive: source === 'live',
     lastError,
-    refresh,
+    refresh: () => refresh(),
 
     saveSite,
     upsertPlant,

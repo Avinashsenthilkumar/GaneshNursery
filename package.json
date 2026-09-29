@@ -11,10 +11,10 @@
     "build": "vite build && node scripts/generate-sitemap.mjs",
     "preview": "vite preview",
     "sitemap": "node scripts/generate-sitemap.mjs",
-    "seed": "node scripts/seed-supabase.mjs"
+    "db:init": "node scripts/init-neon.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.45.4",
+    "@neondatabase/serverless": "^0.10.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.30.0"

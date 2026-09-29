@@ -4,7 +4,8 @@ The problem this version exists to solve, in your words:
 
 > *"if i do change in another device i mean images the change not happening"*
 
-You were right that it was a database problem. Here is what changed.
+You were right that it was a database problem. Here is what changed, and why
+the architecture is not the one we first discussed.
 
 ---
 
@@ -13,9 +14,9 @@ You were right that it was a database problem. Here is what changed.
 Every edit made in the admin panel was written to **localStorage** — a box of
 notes kept inside the one browser that made them. Your phone had its notes, the
 office laptop had its own, and neither could see the other's. Uploaded photos
-were worse: each one was converted into a several-hundred-kilobyte block of text
-and stuffed into that same box, so the file you had to download and commit grew
-every time you added a picture.
+were worse: each one became a several-hundred-kilobyte block of text stuffed
+into that same box, so the file you had to download and commit grew every time
+you added a picture.
 
 Nothing was ever shared, because there was nowhere shared to put it.
 
@@ -23,12 +24,9 @@ Nothing was ever shared, because there was nowhere shared to put it.
 
 | | Holds | Why this one |
 |---|---|---|
-| **Supabase** | Plants, prices, sizes, descriptions, business details, the admin login | Postgres with authentication and per-row permissions built in. Free tier covers this catalogue many times over. |
+| **Neon** | Plants, prices, sizes, descriptions, business details | Serverless Postgres. Sleeps when idle, wakes in under a second, free tier far beyond a nursery catalogue. |
 | **Cloudinary** | The photographs | A CDN that resizes on request. One upload answers a 320px phone card and a 1400px desktop gallery. |
-
-Keeping them apart is deliberate. Photos are large and requested by everyone;
-text is small and changes rarely. Putting the photos in the database would make
-it slow and expensive for no benefit at all.
+| **Vercel functions** | The code between them | Holds the database password server-side so the browser never has one. |
 
 **Press Save and it is live.** No download, no commit, no deploy. A price
 changed on your phone in the nursery is on the office laptop and on every
@@ -36,110 +34,169 @@ customer's screen on their next page load.
 
 ---
 
-## The seven changes
+## Why Neon and not Supabase
 
-### 1. A real login
+You asked for the change, and it turned out to be the better design anyway.
+
+Supabase works by publishing a key in the website's JavaScript and then
+defending the database with row-level security rules. That is a legitimate
+approach, but it means the browser holds a credential, and everything then
+depends on getting the rules right. It is also where the confusion came from:
+publishable key, secret key, legacy anon key, legacy service_role key, four
+names for two ideas.
+
+Neon is just Postgres, so it needed something in front of it — and that
+something is five small functions in `api/`. The connection string lives there,
+on the server. **The browser has no database credential at all.** There is no
+key to publish, no key to rotate, and no rules to get right, because nothing
+untrusted is ever talking to the database.
+
+Setup went from *create project → run SQL → create user → disable sign-ups →
+find the right key → seed* down to **one connection string, one password, one
+command**.
+
+---
+
+## The eight changes
+
+### 1. A real login, and a simpler one
 
 The old passphrase was compared *inside the downloaded JavaScript*. Anyone who
 opened developer tools could read it. That was tolerable only because the panel
 could not change what the public saw.
 
-Now it can — so the lock had to become real. Supabase verifies the password on
-its servers, and Postgres rejects any write that does not carry a valid session.
-Getting past the login screen is no longer enough on its own.
+Now: you type a password, the server checks it, and you get back a signed
+`httpOnly` cookie the browser cannot read or forge. Every save is re-checked
+against that cookie before anything is written.
 
-There is also a working *Forgot the password?* link, which the passphrase
-version could not have had.
+Details worth knowing:
+- A wrong guess is deliberately slowed by a second, which turns thousands of
+  attempts a minute into sixty.
+- The password comparison is constant-time, so failures cannot be timed to
+  learn the answer one character at a time.
+- Changing `ADMIN_PASSWORD` signs everyone out, because the cookie's signing
+  key is derived from it.
 
 ### 2. Photos go to Cloudinary, and get smaller on the way
 
-Adding a photo now: the browser resizes it to 1600px and re-encodes it, then
-uploads. A 5 MB phone photo leaves as roughly 300 KB. That matters because you
-will be uploading over mobile data, standing in the nursery.
+The browser resizes to 1600px and re-encodes before uploading, so a 5 MB phone
+photo leaves as roughly 300 KB. That matters because you will be uploading over
+mobile data, standing in the nursery.
 
 Cloudinary then serves each visitor a version suited to their screen — five
-widths, and AVIF or WebP instead of JPEG where the browser supports it.
-Typically 30–50% fewer bytes than before, with no visible difference.
+widths, and AVIF or WebP instead of JPEG where supported. Typically 30–50%
+fewer bytes, no visible difference.
 
-If an upload fails, the photo is **not lost**. It is kept in the browser and
-marked with a red `!` so you know it has not reached anyone else yet.
+If an upload fails the photo is **not lost**: it stays in the browser, marked
+with a red `!` so you know it has not reached anyone else yet.
 
 ### 3. The site cannot be taken down by the database
 
 Every page starts from the catalogue compiled into the bundle, then swaps in
-live data when it arrives. If that fetch fails — project paused, network out,
-key rotated — the bundled copy simply stays.
+live data when it arrives. If that fetch fails — database asleep, network out,
+functions not deployed — the bundled copy simply stays.
 
 Visitors see slightly stale prices instead of an empty shop. A nursery site that
 goes blank because a database hiccuped is worse than one showing last week's
 prices.
 
-### 4. The Publish tab became the Database tab
+### 4. Every write is validated on the server
 
-There is nothing left to publish. What is useful instead is an honest answer to
-*is this connected, and where did my photo go* — connection status, how many
-plants, sizes and photos exist, how many photos failed to upload, how many
-plants still have no photo at all, and who is signed in.
+Anything arriving from a browser is treated as hostile: types coerced, strings
+trimmed, arrays capped at 5 photos and 24 sizes, category forced to Timber or
+Fruit, and unknown fields dropped rather than stored. Queries use bound
+parameters, so a plant named `Robert'); drop table plants;--` is just an oddly
+named plant. There is a test for that.
 
-### 5. The panel tells you when a save fails
+### 5. The Publish tab became the Database tab
 
-Every save is now a real network request, so it can fail. Saving shows *Saving…*,
-then either *live now* or the actual reason it did not work. It never claims
-success it did not have.
+There is nothing left to publish. What is useful instead: connection status, how
+many plants, sizes and photos exist, how many photos failed to upload, how many
+plants still have no photo at all.
 
-### 6. The catalogue card and the gallery got faster
+### 6. Failures say what actually went wrong
+
+Every save is a real network request, so it can fail. The panel shows *Saving…*
+then either *live now* or the real reason — *the plants table has not been
+created yet*, *another plant already uses that URL slug*, *the database may be
+waking up*. It never claims a success it did not have.
+
+### 7. `npm run dev` runs the backend too
+
+A small Vite plugin runs the `api/` handlers inside the dev server, so one
+command gives you the site *and* a working admin panel against the real
+database. No second terminal, no `vercel dev`.
+
+### 8. The catalogue got faster
 
 `SmartImage` builds the responsive `srcset` itself — Cloudinary widths for
-uploaded photos, the existing `-sm` pair for files in `/public`. Callers pass a
-plain `src` and nothing else. Admin thumbnails request a 320px version rather
-than the full-size photo, so the plant list on a phone loads a fraction of what
-it used to.
+uploaded photos, the existing `-sm` pair for files in `/public`. Admin
+thumbnails request a 320px version rather than the full photo. `/api/plants` is
+cached at Vercel's edge for a minute, so most visitors never wait on the
+database at all.
 
-### 7. Everything else it touched
+---
 
-- `ContentContext` is still the only file that knows where content comes from,
-  so a future backend change is confined to it.
-- The seed script loads the existing 23 plants and 41 sizes into a fresh
-  database, and is safe to re-run.
-- `.env.example`, the README and a new `supabase/SETUP.md` describe the whole
-  thing.
+## A bug this caught
+
+Testing turned up something that would have been embarrassing in front of
+customers: clearing an offer price stored it as **₹0** rather than as "no
+offer", because `Number(null)` is `0` and `0` is a perfectly valid number. The
+catalogue would have advertised free trees.
+
+Fixed, and there are now four tests specifically for empty-versus-zero.
 
 ---
 
 ## What you have to do
 
-**[`supabase/SETUP.md`](supabase/SETUP.md)** — about thirty minutes, once.
+**[`NEON-SETUP.md`](NEON-SETUP.md)** — about twenty minutes, once.
 
-The short version:
-
-1. Create a Supabase project (**Mumbai** region — customers are in Tamil Nadu).
-2. Run `supabase/schema.sql` in its SQL editor.
-3. Create your admin user, and **turn off public sign-ups**. Supabase allows
-   them by default; left on, anyone could register and edit the catalogue. This
-   is the one step with real consequences if skipped.
-4. Create a Cloudinary account and an **unsigned** upload preset.
-5. Put four values in `.env` locally and in Vercel, then **redeploy** — Vercel
-   bakes them in at build time.
-6. `npm install && npm run seed` to load the plants.
+1. Create a Neon project (**Singapore or Mumbai** region) and copy the
+   **pooled** connection string.
+2. Create a Cloudinary account and an **unsigned** upload preset.
+3. Put four values in `.env`:
+   `DATABASE_URL`, `ADMIN_PASSWORD`, `VITE_CLOUDINARY_CLOUD_NAME`,
+   `VITE_CLOUDINARY_UPLOAD_PRESET`
+4. `npm install && npm run db:init && npm run dev`
+5. Same four values in Vercel, then **redeploy**.
 
 Then sign in at `/admin`, change a price on your phone, and check the laptop.
+
+### One thing to check before you start
+
+This needs a host that runs serverless functions — Vercel, Netlify or
+Cloudflare Pages. **Plain Bluehost static hosting will not work**: the public
+site would look perfect, but the admin panel would report *"The API is not
+running."* If the site has to live on Bluehost, say so and I will move the API
+to something that host can run.
 
 ---
 
 ## What was verified
 
-- Every source file parses; every import resolves to a real export.
-- All 23 plants and 41 sizes survive the app → database → app round-trip with
-  no loss, including per-size photos, offer prices, and Magilam's "price on
-  request" staying `null` rather than becoming `0`.
-- 24 unit tests on the Cloudinary URL logic, including the one that matters:
-  re-requesting a size replaces the transform instead of stacking `w_1400/w_320`.
-- The panel rendered and driven at 320, 390, 430, 768 and 1280px in both light
-  and dark: login, failed sign-in, plant list, plant editor, an expanded
-  per-size photo strip, details and database. No sideways scroll anywhere, no
-  console errors.
-- The fixed bottom navigation clears the page content at every width from 320px
-  to the 861px breakpoint.
+Not by reading the code — by running it.
+
+- **A real Postgres database, real HTTP handlers: 52 tests, all passing.**
+  Wrong password rejected; tampered session cookie rejected; anonymous writes
+  and deletes blocked with 401 while reads stay public; save and update by slug
+  reusing the same row; SQL injection stored as plain text with the table
+  intact; unknown fields dropped; photo arrays capped; empty prices becoming
+  null rather than zero while a genuine 0 survives; deleting twice giving 404;
+  wrong HTTP methods giving 405.
+- **The setup script run against an empty database**, then read back through
+  the API: 23 plants, 41 sizes, Tamil text intact, per-size photos intact,
+  Magilam's "price on request" still null, business details stored without
+  `contactEndpoint` leaking in.
+- **The panel rendered and driven** at 320, 390, 430, 768 and 1280px in both
+  light and dark: sign-in with a wrong password then a right one, all four
+  tabs, the plant editor, an expanded per-size photo strip. No sideways scroll
+  anywhere, no console errors.
+- **The three ways this can fail in production**, each shown to produce a
+  message naming the actual cause: functions not deployed, database error,
+  no network.
+- Every source file parses; every import resolves to a real export; every CSS
+  class used by a component exists.
 
 ## Two things still open
 
@@ -154,9 +211,9 @@ Then sign in at `/admin`, change a price on your phone, and check the laptop.
 
 The Cloudinary upload preset name ships in the JavaScript and is therefore
 public. Someone who digs it out could upload images to the account. They cannot
-delete anything, read anything, or touch the database, and SETUP.md explains how
-to restrict the preset to one folder with a size cap.
+delete anything, read anything, or touch the database, and NEON-SETUP.md
+explains how to restrict the preset to one folder with a size cap.
 
-The alternative — signed uploads — needs a server to generate signatures, which
-is more to run and pay for than this problem is worth here. If it ever does
-become a problem, the fix is confined to `src/lib/cloudinary.js`.
+Signed uploads would close that gap, and unlike before you now have a server
+that could sign them — it would be one more function in `api/`. Worth doing if
+it ever becomes a problem; not worth doing before.

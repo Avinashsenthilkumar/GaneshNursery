@@ -69,28 +69,38 @@ back to WhatsApp so a lead is never lost.
 
 ## Database and photo hosting
 
-The catalogue lives in Supabase and the photographs in Cloudinary, so the admin
-panel edits the live site. Both have free tiers that comfortably cover a nursery
-this size, and neither needs a card.
+The catalogue lives in **Neon** (serverless Postgres) and the photographs in
+**Cloudinary**, so the admin panel edits the live site. Both have free tiers
+that comfortably cover a nursery this size, and neither needs a card.
 
-**[`supabase/SETUP.md`](supabase/SETUP.md) walks through it end to end** —
-about thirty minutes, once.
+The browser never holds a database credential. Pages call this project's own
+`/api` routes, which run as serverless functions and keep the connection string
+server-side.
 
-The site runs without either of them, serving the catalogue compiled into the
-bundle. That keeps local development and preview builds working with no
-credentials, and it is what visitors fall back to if the database is ever
-unreachable.
+**[`NEON-SETUP.md`](NEON-SETUP.md) walks through it end to end** — about twenty
+minutes, once, and four values in total.
+
+The site runs without any of it, serving the catalogue compiled into the bundle.
+That keeps local development and preview builds working with no credentials, and
+it is what visitors fall back to if the database is ever unreachable.
 
 ## Deploying
 
-**Vercel** — `vercel.json` handles SPA rewrites, caching and security headers.
-Add the four environment variables from `.env.example` under Settings →
-Environment Variables, then **redeploy** — Vercel bakes them in at build time,
-so a variable added after a deploy does nothing until you rebuild.
+**Vercel** — `vercel.json` handles SPA rewrites, caching and security headers,
+and the `api/` folder becomes serverless functions automatically. Add the four
+environment variables from `.env.example` under Settings → Environment
+Variables, then **redeploy** — Vercel bakes them in at build time, so a variable
+added after a deploy does nothing until you rebuild.
 
 **Bluehost / Apache** — upload the contents of `dist/` to `public_html`. The
 `.htaccess` in `public/` is copied into the build and handles HTTPS forcing, the
 www redirect, SPA routing, compression and caching.
+
+⚠️ **The admin panel will not work on plain Apache hosting.** It needs the
+`api/` folder running as functions, which static hosting cannot do. The public
+site works perfectly — it falls back to the catalogue compiled into the bundle —
+but nothing can be edited. Use Vercel, Netlify or Cloudflare Pages for the
+editable version.
 
 Either way, submit `https://ganeshnursery.co.in/sitemap.xml` in Google Search Console
 once it's live.
@@ -104,7 +114,7 @@ src/
     plants.js       catalogue — the fallback, and what the seed script loads
     content.js      services, blog posts, clients, testimonials
   lib/
-    supabase.js     database client, and row <-> app shape conversion
+    api.js          the browser's whole view of the backend: four fetch calls
     cloudinary.js   photo delivery URLs (resize, format) and uploads
     photos.js       browser-side resizing, then upload; one call for the panel
   context/
@@ -116,12 +126,15 @@ src/
   pages/            one file per route
   App.jsx           routes, scroll behaviour, route announcements
   styles.css        full design system, tokens at the top
-supabase/
-  schema.sql        run once — tables, security policies, triggers
-  SETUP.md          the full walkthrough for both services
+api/                serverless functions — the only code that sees the database
+  _lib/db.js        Neon client, and row <-> app shape conversion
+  _lib/auth.js      password check, signed httpOnly session cookie
+  plants.js         GET public, POST/DELETE signed in
+  site.js           GET public, PUT signed in
+  auth.js           sign in, sign out, am-I-signed-in
 scripts/
   generate-sitemap.mjs   runs automatically after every build
-  seed-supabase.mjs      loads the 23 plants into a fresh database
+  init-neon.mjs          creates the tables and loads the 23 plants (npm run db:init)
 reference/          design mockups (NOT deployed — outside public/)
 ```
 
@@ -135,8 +148,12 @@ reference/          design mockups (NOT deployed — outside public/)
   falls back gracefully when an image fails to load, and builds the responsive
   `srcset` itself (Cloudinary widths for uploaded photos, the `-sm` pair for
   files in `/public`). Callers pass a plain `src` and nothing else.
-- `ContentContext` is the only file that knows where content comes from. If the
-  backend ever changes again, that is the file to change.
+- `ContentContext` and `src/lib/api.js` are the only files that know where
+  content comes from. The backend has now changed twice without a single
+  component being touched, which is the point of the arrangement.
+- Nothing in `api/` may ever be imported by `src/`. That folder runs on the
+  server and reads `DATABASE_URL`; importing it into a component would compile
+  the connection string into the browser bundle.
 - Anything in `/public` is deployed publicly. Don't put working files there.
 
 ---
@@ -234,8 +251,8 @@ ffmpeg -i input.mp4 -vf "scale=432:-2,fps=24" -c:v libx264 -preset veryslow \
 
 ## Admin panel
 
-Go to **`/admin`** and sign in with the email and password created in Supabase.
-Full setup: **[`supabase/SETUP.md`](supabase/SETUP.md)**.
+Go to **`/admin`** and sign in with your `ADMIN_PASSWORD`.
+Full setup: **[`NEON-SETUP.md`](NEON-SETUP.md)**.
 
 ### What you can edit
 
@@ -257,7 +274,7 @@ nursery is on the office laptop straight away.
 
 Two services carry it, and they do different jobs:
 
-- **Supabase** (Postgres) holds the text, prices and sizes, and the admin login.
+- **Neon** (serverless Postgres) holds the text, prices and sizes.
 - **Cloudinary** holds the photographs and serves them from a CDN, resized per
   device — one upload answers a 320px phone card and a 1400px desktop gallery.
 
@@ -266,15 +283,20 @@ the nursery costs about 300 KB of mobile data rather than 5 MB.
 
 ### About the login
 
-This is a real login now. Supabase verifies the password on its own servers,
-and Postgres row-level security rejects any write that does not carry a valid
-session — so getting past the login screen is not, on its own, enough to change
-anything.
+This is a real login now. One password, held as an environment variable on the
+server, checked there and never sent back to the browser. What the browser gets
+is a signed `httpOnly` cookie it can neither read nor forge, and every write is
+re-checked against it server-side — so getting past the login screen is not, on
+its own, enough to change anything.
 
-One consequence worth understanding: **anyone signed in can change what the
-public sees.** Give the account to people you would trust with the price list,
-and create one account per person (Supabase → Authentication → Users) rather
-than sharing one.
+To change the password: Vercel → Settings → Environment Variables →
+`ADMIN_PASSWORD` → redeploy. That signs everyone out, because the cookie's
+signing key is derived from the password.
+
+One password rather than per-person accounts is a deliberate choice: one person
+edits this site, and a users table with hashing, resets and invites is a lot of
+machinery to record which of the one people made a change. If the nursery takes
+on staff who edit prices, `api/_lib/auth.js` is where that would go.
 
 ### If the database goes down
 
@@ -283,8 +305,11 @@ bundle, then swaps in live data once it arrives; if that fetch fails, the
 bundled copy simply stays. Visitors see slightly stale prices rather than an
 empty shop, and the Database tab says what happened.
 
-That fallback is also why the site runs with no credentials at all — useful for
-local development and preview builds.
+### Local development
+
+`npm run dev` serves the `/api` functions too, through a small Vite plugin in
+`vite.config.js`. One command, and the admin panel works locally against the
+real Neon database — no `vercel dev` alongside it.
 
 ## Plant photos
 
